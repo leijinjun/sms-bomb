@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+    <contextName>${project.name}</contextName>
+    <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
+    <!-- 通用日志配置 -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <logger name="org.springframework.web" level="DEBUG"/>
+    <logger name="com.lei2j.sms.bomb" level="INFO"/>
+    <logger name="org.springframework.jdbc.core" additivity="false" level="INFO"/>
+    <logger name="org.springframework.jdbc.core.JdbcTemplate" level="DEBUG"/>
+    <logger name="org.springframework.boot.autoconfigure.logging" level="INFO"/>
+    <logger name="org.apache.http" level="DEBUG"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring.log}"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+    <include resource="file-appender.xml" />
+    <!-- ============ -->
+    <!-- 开发环境 -->
+    <!--springProfile的name属性对应application.properties中的spring.profiles.active-->
+    <springProfile name="dev">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <!--<appender-ref ref="FILE" />-->
+        </root>
+    </springProfile>
+
+    <!-- 测试环境 -->
+    <springProfile name="test">
+        <root level="INFO">
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- 生产环境 -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="FILE" />
+        </root>
+    </springProfile>
+</configuration>

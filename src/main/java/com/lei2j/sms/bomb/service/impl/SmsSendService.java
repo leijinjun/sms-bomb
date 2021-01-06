@@ -164,12 +164,5 @@ public class SmsSendService extends CommonServiceImpl {
             smsSendLogRepository.save(record);
         });
     }
-
-    public static void main(String[] args) throws IOException {
-        String json = "{\"mobile\":\"17688995485\",\"smsform\":\"1\"}";
-        LinkedHashMap<String, String> hashMap = new LinkedHashMap<>();
-        String post = HttpUtils.post("https://user.ifeng.com/api/v1/sendsms?platform=w&systemid=1", json, hashMap);
-        System.out.println(post);
-    }
 }
 

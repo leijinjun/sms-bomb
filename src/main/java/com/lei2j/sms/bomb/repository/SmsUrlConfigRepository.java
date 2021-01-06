@@ -1,7 +1,6 @@
 package com.lei2j.sms.bomb.repository;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * @version V1.0
  * @date 2021/1/4
  **/
-public interface SmsUrlConfigRepository extends JpaRepository<SmsUrlConfig, Integer> {
+public interface SmsUrlConfigRepository extends CommonJpaRepository<SmsUrlConfig, Integer> {
 
     /**
      * @param normal

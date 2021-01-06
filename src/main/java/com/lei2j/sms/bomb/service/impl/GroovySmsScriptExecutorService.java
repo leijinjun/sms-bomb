@@ -2,11 +2,9 @@ package com.lei2j.sms.bomb.service.impl;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
 import com.lei2j.sms.bomb.script.SmsCommonScript;
-import com.lei2j.sms.bomb.util.HttpUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
@@ -14,7 +12,6 @@ import org.springframework.util.DigestUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,9 +20,6 @@ import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author leijinjun
@@ -125,28 +119,5 @@ public class GroovySmsScriptExecutorService {
         public void setCheckDigit(String checkDigit) {
             this.checkDigit = checkDigit;
         }
-    }
-
-    public static void main(String[] args) throws InterruptedException {
-        int size = 1000;
-        ExecutorService executorService = Executors.newFixedThreadPool(5,
-                new BasicThreadFactory.Builder().daemon(true).build());
-        for (int i = 0; i < size; i++) {
-            executorService.submit(()->{
-                try {
-                    InputStream inputStream = HttpUtils.getStreaming("https://uac.10010.com/portal/Service/CreateImage?t=" + System.currentTimeMillis(), null);
-                    String fileName = "test_" + System.currentTimeMillis() + ".png";
-                    Files.copy(inputStream, Paths.get("D:\\idea-project\\cnn_captcha\\sample\\new_train", fileName));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            });
-        }
-        executorService.awaitTermination(10, TimeUnit.MINUTES);
     }
 }

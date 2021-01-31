@@ -1,7 +1,7 @@
 package com.lei2j.sms.bomb.entity;
 
 import javax.persistence.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 /**
  * @author leijinjun
@@ -30,7 +30,7 @@ public class SmsSendLog {
     private String response;
 
     @Column(name = "create_at")
-    private Instant createAt;
+    private LocalDateTime createAt;
 
     @Column(name = "request_duration")
     private Integer requestDuration;
@@ -90,11 +90,11 @@ public class SmsSendLog {
         this.response = response;
     }
 
-    public Instant getCreateAt() {
+    public LocalDateTime getCreateAt() {
         return createAt;
     }
 
-    public void setCreateAt(Instant createAt) {
+    public void setCreateAt(LocalDateTime createAt) {
         this.createAt = createAt;
     }
 

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>短信网站来源配置</title>
+    <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
+    <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
+</head>
+<body>
+<div class="container-fluid" id="app">
+    <div class="row">
+        <div class="col-xs-1 col-sm-3 col-md-2"></div>
+        <div class="col-xs-10 col-sm-6 col-md-8">
+            <div class="row" style="height: 62px;">
+                <div class="col-md-4"></div>
+            </div>
+            <h5>短信网站来源配置</h5>
+            <div class="row">
+                <form id="search-form" class="form-inline" role="form" style="width: 100%;">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="websiteName">
+                                <input type="text" class="form-control" id="websiteName" name="websiteName"
+                                       v-model="params.websiteName" placeholder="网站名称"/>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>
+                                <select class="form-control" name="normal" v-model="params.normal" style="min-width: 190px;">
+                                    <option value="">请选择</option>
+                                    <option value="true">正常</option>
+                                    <option value="false">禁用</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <button id="search" type="button" class="btn btn-primary" @click="search()"
+                                    style="margin-right: 10px;">Filter
+                            </button>
+                            <input id="resetBtn" type="button" class="btn btn-primary" value="Reset" @click="reset()"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div style="margin-top: 40px;">
+                <p><a th:href="edit" class="btn btn-primary">新增</a></p>
+                <table class="table table-bordered table-hover table-sm">
+                    <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">状态</th>
+                        <th scope="col">创建日期</th>
+                        <th scope="col">图标</th>
+                        <th scope="col">网站</th>
+                        <th scope="col">短信接口</th>
+                        <th scope="col">手机号参数名</th>
+                        <th scope="col">是否开启脚本</th>
+                        <th scope="col">最后使用时间</th>
+                        <th scope="col">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-if="pager.data.length == 0"><td colspan="10" style="text-align: center;">没有匹配的记录</td></tr>
+                    <!-- 若存在表单输入值则需要设置:key,区别每一条记录 -->
+                    <tr v-for="item in pager.data" v-bind:key="item.id">
+                        <td scope="row">{{item.id}}</td>
+                        <td>
+                            <label>
+                                <input type="checkbox" :checked="item.normal" data-toggle="switch" data-on-color="success"
+                                       data-on-text="正常" data-off-text="禁用" :data-id="item.id"/>
+                                <!--<input type="checkbox" name="normal" data-toggle="switch" data-on-color="secondary"
+                                       data-off-color="default" :data-id="item.id" :checked="item.normal"
+                                       v-model="item.normal">-->
+                            </label>
+                        </td>
+                        <td>{{item.createAt}}</td>
+                        <td style="padding: 13px;">
+                            <img :src="item.icon" style="border: 0;" width="75px;" height="auto;"/>
+                        </td>
+                        <td><a :href="item.website" style="text-decoration: none;"
+                               :style="item.website ? '':'cursor: not-allowed;'"
+                               target="_blank">{{item.websiteName}}</a></td>
+                        <td>{{item.smsUrl}}</td>
+                        <td>{{item.phoneParamName}}</td>
+                        <td>
+                            <span v-if="item.openScript" class="text-success">启用</span>
+                            <span v-else class="text-danger">关闭</span>
+                        </td>
+                        <td>
+                            {{item.lastUsedTime}}
+                        </td>
+                        <td>
+                            <a :href="'edit.html?id='+item.id">编辑</a>
+                            <!--                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal" >编辑</button>-->
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+                <nav aria-label="...">
+                    <div class="pull-left pagination-detail">
+                        <span class="pagination-info">总共 {{pager.tc}} 条记录</span>
+                        <span class="page-list">每页显示
+                        <span class="btn-group dropdown dropup">
+                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                <span id="showPageSize" class="page-size">{{pager.ps}}</span>
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu" role="menu">
+                                <li role="menuitem" :class="{active:pager.ps==20}" @click="getPage(1,20)"><a>20</a></li>
+                                <li role="menuitem" :class="{active:pager.ps==25}" @click="getPage(1,25)"><a>25</a></li>
+                                <li role="menuitem" :class="{active:pager.ps==50}" @click="getPage(1,50)"><a>50</a></li>
+                                <li role="menuitem" :class="{active:pager.ps==100}" @click="getPage(1,100)"><a>100</a></li>
+                            </ul>
+                        </span> 条记录
+                    </span>
+                        <div class="pagination pagination-success" style="margin-left: 5px;">
+                            <a href="javascript:void(0);" class="btn btn-primary previous"
+                               :class="{disabled:pager.pn===1}"
+                               @click="getPage(pager.pn-1,pager.ps)">
+                                <i class="fui-arrow-left"></i>
+                                上一页
+                            </a>
+                            <a href="javascript:void(0);" class="btn btn-primary next" :class="{disabled:pager.pn>=pager.tp}"
+                               @click="getPage(pager.pn+1,pager.ps)"
+                               style="width: 112px;margin-left: -10px;">
+                                下一页
+                                <i class="fui-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+        <div class="col-xs-1 col-md-3 col-md-2">
+        </div>
+    </div>
+</div>
+<script th:src="@{{contextPath}/js/vue.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/jquery@3.3.1/jquery-3.3.1.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/bootstrap@4.6.0/js/bootstrap.bundle.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/flat-ui.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/common/public.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script type="text/javascript">
+    let contextPath = '[[${application.contextPath}]]';
+    let vue = new Vue({
+        el:'#app',
+        data:{
+            form:{
+                icon:'',
+                websiteName: '',
+                website:'',
+                smsUrl:'',
+                phoneParamName:'',
+                bindingParams:{},
+                businessType:'',
+                successCode:'',
+            },
+            pager:{
+                pn:1,
+                ps:20,
+                tc:0,
+                tp:0,
+                data:[],
+            },
+            params:{
+                websiteName:null,
+                normal:''
+            },
+        },
+        created:function () {
+            this.getPage(1);
+        },
+        methods:{
+            getPage:function (pageNo,pageSize,params) {
+                let $this = this;
+                let p = $.extend({
+                    pageNo: pageNo ? pageNo : this.pager.pn,
+                    pageSize: pageSize ? pageSize : this.pager.ps
+                }, params);
+                $http.get(contextPath + '/url/config/page', p)
+                    .then(function (res) {
+                        $this.pager["pn"] = res.pageNo;
+                        $this.pager["ps"] = res.pageSize;
+                        $this.pager["tc"] = res.totalCount;
+                        $this.pager["tp"] = Math.ceil(res.totalCount / res.pageSize);
+                        $this.pager["data"] = res.list;
+                    }).catch(function (reason) {
+                })
+            },
+            search:function(){
+                this.getPage(1, this.pager.ps, this.params);
+            },
+            initSwitch:function () {
+                let $this = this;
+                let $switch = $('[data-toggle="switch"]');
+                $switch.bootstrapSwitch('destroy');
+                $switch.bootstrapSwitch().on('switchChange.bootstrapSwitch', function (event, state) {
+                    let id = $(event.delegateTarget).attr('data-id');
+                    $this.updateStatus(id, state);
+                })
+            },
+            updateStatus: function (id, status) {
+                $http.postWithForm(contextPath+'/url/config/updateStatus',{id:id,normal:status})
+                .then(function (res) {
+                    gft.alert.success('操作成功',2000)
+                }).catch(function (reason) {
+                })
+            },
+            submit:function () {
+                alert(1)
+            },
+            reset:function(){
+                this.params={}
+            }
+        },
+        updated:function () {
+            this.initSwitch();
+        },
+    })
+</script>
+</body>
+</html>

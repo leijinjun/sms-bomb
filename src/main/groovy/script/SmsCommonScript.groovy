@@ -1,4 +1,4 @@
-package com.lei2j.sms.bomb.script
+package script
 
 class SmsCommonScript implements SmsScript{
 }

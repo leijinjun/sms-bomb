@@ -1,4 +1,4 @@
-package com.lei2j.sms.bomb.script
+package script
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import groovy.json.JsonSlurper

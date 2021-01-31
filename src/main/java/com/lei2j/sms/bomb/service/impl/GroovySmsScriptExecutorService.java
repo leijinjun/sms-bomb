@@ -1,7 +1,7 @@
 package com.lei2j.sms.bomb.service.impl;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
-import com.lei2j.sms.bomb.script.SmsCommonScript;
+import script.SmsCommonScript;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang3.StringUtils;

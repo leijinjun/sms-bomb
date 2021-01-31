@@ -20,8 +20,6 @@ import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author leijinjun
@@ -29,7 +27,6 @@ import java.util.regex.Pattern;
  **/
 @Service
 public class SmsSendService extends CommonServiceImpl {
-    private static final Pattern HEADER_COMPILE = Pattern.compile("\\[.+?]");
     private static final Map<String, String> FIXED_HEADER = new LinkedHashMap<>();
 
     static{
@@ -102,29 +99,23 @@ public class SmsSendService extends CommonServiceImpl {
     }
 
     private String request(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws IOException {
-        String headers = smsUrlConfig.getHeaders();
-        //解析固定请求头
-        if (StringUtils.isNotBlank(headers)) {
-            Matcher matcher = HEADER_COMPILE.matcher(headers);
-            while (matcher.find()) {
-                String group = matcher.group();
-                String headerPair = group.substring(1, group.length() - 1);
-                String[] split = headerPair.split(":", 2);
-                String name = split[0];
-                String value = split[1];
-                if (StringUtils.isNotBlank(value)) {
-                    if ("cookie".equalsIgnoreCase(name)) {
-                        String o1 = headerMap.computeIfPresent("Cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
-                        String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
-                        if (o1 == null && o2 == null) {
-                            headerMap.put("Cookie", value);
-                        }
-                    } else {
-                        headerMap.put(name, value);
+        List<String> headerList = smsUrlConfig.getHeaderList();
+        headerList.forEach((headerPair) -> {
+            String[] split = headerPair.split(":", 2);
+            String name = split[0];
+            String value = split[1];
+            if (StringUtils.isNotBlank(value)) {
+                if ("cookie".equalsIgnoreCase(name)) {
+                    String o1 = headerMap.computeIfPresent("Cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
+                    String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
+                    if (o1 == null && o2 == null) {
+                        headerMap.put("Cookie", value);
                     }
+                } else {
+                    headerMap.put(name, value);
                 }
             }
-        }
+        });
         //解析固定请求参数
         String bindingParams = smsUrlConfig.getBindingParams();
         if (StringUtils.isNotBlank(bindingParams)) {

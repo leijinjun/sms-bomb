@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${#strings.isEmpty(param.id)}?'新建短信接口':'编辑短信接口信息'">编辑</title>
+    <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
+    <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
+</head>
+<body>
+<div class="container-md"  id="app">
+    <div style="padding: 1.5rem;border: .2rem solid #f8f9fa;margin: 1rem -15px 0;">
+        <form role="form">
+            <div class="row">
+                <div class="col">
+                    <label for="formIcon">网站图标地址</label>
+                    <input id="formIcon" type="text" class="form-control" placeholder="" v-model="form.icon">
+                </div>
+                <div class="col">
+                    <label for="formWebsiteName">网站名称</label>
+                    <input type="text" id="formWebsiteName" class="form-control" placeholder="" v-model="form.websiteName">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formWebsiteAddress">网站地址</label>
+                    <input type="text" id="formWebsiteAddress" class="form-control" placeholder="" v-model="form.website">
+                </div>
+                <div class="col">
+                    <label for="formSmsUrl">接口地址</label>
+                    <input type="text" id="formSmsUrl" class="form-control" placeholder="" v-model="form.smsUrl">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formPhoneParamName">手机号参数名称</label>
+                    <input type="text" id="formPhoneParamName" class="form-control" placeholder="" v-model="form.phoneParamName">
+                </div>
+                <div class="col">
+                    <label for="formBusinessName">接口业务名称</label>
+                    <input type="text" id="formBusinessName" class="form-control" placeholder="例如：注册"
+                           v-model="form.businessName">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formSuccessCode">短信发送成功处理代码</label>
+                    <input type="text" id="formSuccessCode" class="form-control"
+                           placeholder="例如：key=data.code,value=0"
+                           v-model="form.successCode">
+                </div>
+                <div class="col">
+                    <label for="formEndCode">短信发送失败处理代码</label>
+                    <input type="text" id="formEndCode" class="form-control" placeholder=""
+                           v-model="form.endCode">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formRequestMethod">调用请求方法</label>
+                    <select class="form-control" id="formRequestMethod" v-model="form.requestMethod">
+                        <option value="GET">GET</option>
+                        <option value="POST">POST</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="formContentType">请求数据格式</label>
+                    <select class="form-control" id="formContentType" v-model="form.contentType">
+                        <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
+                        <option value="application/json">application/json</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formResponseType">响应数据格式</label>
+                    <select class="form-control" id="formResponseType" v-model="form.responseType">
+                        <option value="json">JSON</option>
+                        <option value="xml">XML</option>
+                        <!--<option value="text">TEXT</option>-->
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="formFixedHeaders">固定请求头</label>
+                    <textarea class="form-control" id="formFixedHeaders" rows="3" v-model="headerList"></textarea>
+                </div>
+            </div>
+            <div class="binding-params-container" style="margin-bottom: 5px;margin-top: 5px;border: 0.2rem solid rgb(248, 249, 250);">
+                <p>绑定参数
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#edit-modal"
+                            style="margin-left: 5px;">新增
+                    </button>
+                </p>
+                <div class="row" style="padding: 7px;" v-for="item in bindingParamsMap" v-bind:key="item.key">
+                    <div class="col-2">
+                        <label></label>
+                        <div class="btn-group" role="group" style="padding-top: 16px;padding-left: 31px;">
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal">新增</button>
+                            <button type="button" class="btn btn-primary" @click="removeItemBindingParams(item.key)">移除</button>
+                        </div>
+
+                    </div>
+                    <div class="col">
+                        <label for="formFixedBindingParamsKey">Key</label>
+                        <input type="text" id="formFixedBindingParamsKey" class="form-control" placeholder=""
+                               v-model="item.key" readonly>
+                    </div>
+                    <div class="col">
+                        <label for="formFixedBindingParamsValue">Value</label>
+                        <input type="text" id="formFixedBindingParamsValue" class="form-control" placeholder=""
+                               v-model="item.val" readonly>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 16px;">
+                <div class="col">
+                    <div class="accordion" id="accordionOpenScript">
+                        <div class="card">
+                            <div class="card-header" id="headingOne">
+                                <h2 class="mb-0" style="margin-top: auto;">
+                                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                        展开/收缩
+                                    </button>
+                                </h2>
+                            </div>
+                            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionOpenScript">
+                                <div class="card-body">
+                                    <input type="hidden" name="openScript" v-model="form.openScript"/>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="formOpenScript">开启脚本</label>
+                                            <input id="formOpenScript" type="checkbox" :checked="form.openScript"
+                                                   data-toggle="switch" data-on-color="success" data-off-color="default" />
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="formScriptName">脚本名称</label>
+                                            <input type="text" id="formScriptName" class="form-control" placeholder=""
+                                                   v-model="form.scriptName">
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <label for="formScriptContent">脚本内容</label>
+                                            <textarea class="form-control" id="formScriptContent" rows="3"
+                                                      v-model="form.scriptContent"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top: 20px;">
+                <div class="col">
+                    <button type="button" class="btn btn-primary" @click="update()">修改</button>
+                    <a  class="btn btn-default" th:href="list.html">取消</a>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="modal fade" id="edit-modal" tabindex="-1" data-keyboard="true"
+         aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">新增绑定参数</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form role="form">
+                        <p v-if="errors.length">
+                        <ul style="color: #e74c3c;">
+                            <li v-for="error in errors">{{ error }}</li>
+                        </ul>
+                        </p>
+                        <div class="form-group" :class="{'has-error':bindingParamFormValidate.key}">
+                            <label for="bindingParamKey">Key</label>
+                            <input id="bindingParamKey" type="text" class="form-control" placeholder="" v-model="bindingParamForm.key">
+                        </div>
+                        <div class="form-group" :class="{'has-error':bindingParamFormValidate.value}">
+                            <label for="bindingParamValue">Value</label>
+                            <input type="text" id="bindingParamValue" class="form-control" placeholder=""
+                                   v-model="bindingParamForm.value">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" @click="addBindingParams()">添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script th:src="@{{contextPath}/js/vue.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/jquery@3.3.1/jquery-3.3.1.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/bootstrap@4.6.0/js/bootstrap.bundle.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/flat-ui.min.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/common/public.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script>
+    let contextPath = '[[${application.contextPath}]]';
+    let  id = '[[${param.id}]]';
+    let vue = new Vue({
+        el:'#app',
+        data:{
+            isEdit: id !== '',
+            bindingParamForm:{
+                key:'',
+                value:''
+            },
+            errors: [],
+            bindingParamFormValidate:{
+                key:false,
+                value:false
+            },
+            form:{
+                id:null,
+                icon:null,
+                websiteName:null,
+                website:null,
+                smsUrl:null,
+                phoneParamName: null,
+                bindingParamsMap: {},
+                businessName:null,
+                successCode: null,
+                endCode:null,
+                openScript:null,
+                scriptName:'',
+                scriptContent:null,
+                requestMethod:null,
+                contentType:null,
+                headerList:[],
+                responseType:null,
+            },
+        },
+        created:function () {
+            let $this = this;
+            if (this.isEdit) {
+                $http.get(contextPath+'/url/config/'+id)
+                .then(function (res) {
+                    $this.$data.form = res;
+                }).catch(function (reason) {
+                    gft.alert.error(reason, 2000);
+                })
+            }
+        },
+        methods:{
+            update:function(){
+                let body = {
+                    id: this.form.id,
+                    icon: this.form.icon,
+                    website: this.form.website,
+                    websiteName: this.form.websiteName,
+                    smsUrl: this.form.smsUrl,
+                    phoneParamName: this.form.phoneParamName,
+                    bindingParams: JSON.stringify(this.form.bindingParamsMap) === "{}" ? null : JSON.stringify(this.form.bindingParamsMap),
+                    businessName: this.form.businessName,
+                    successCode: this.form.successCode,
+                    endCode: this.form.endCode,
+                    openScript: this.form.openScript,
+                    scriptName: this.form.scriptName,
+                    scriptContent: this.form.scriptContent,
+                    requestMethod: this.form.requestMethod,
+                    contentType: this.form.contentType,
+                    headers: this.form.headers,
+                    responseType: this.form.responseType
+                }
+                $http.post(contextPath+'/url/config/save',body)
+                .then(function (res) {
+                    gft.alert.error('操作成功', 2000);
+                    window.location = 'list';
+                }).catch(function (reason) {
+                    gft.alert.error(reason, 2000);
+                })
+            },
+            removeItemBindingParams:function (key) {
+                let json = $.extend({}, this.form.bindingParamsMap);
+                delete json[key]
+                Vue.set(this.form, 'bindingParamsMap', json);
+            },
+            addBindingParams:function () {
+                if (!this.checkBindingParamForm()) {
+                    return;
+                }
+                let result = $.extend({},this.form.bindingParamsMap);
+                result[this.bindingParamForm.key] = this.bindingParamForm.value;
+                Vue.set(this.form, 'bindingParamsMap', result);
+                $('#edit-modal').modal('hide');
+            },
+            checkBindingParamForm: function () {
+                this.errors = [];
+                let passed = true;
+                if (!this.bindingParamForm.key) {
+                    this.bindingParamFormValidate.key = true;
+                    this.errors.push('Key不能为空');
+                    passed = false;
+                }else if(this.form.bindingParamsMap&&this.form.bindingParamsMap[this.bindingParamForm.key]) {
+                    this.bindingParamFormValidate.key = true;
+                    this.errors.push('Key已经存在');
+                    passed = false;
+                }else{
+                    this.bindingParamFormValidate.key = false;
+                    passed &= true;
+                }
+                if (!this.bindingParamForm.value) {
+                    this.bindingParamFormValidate.value = true;
+                    this.errors.push('Value不能为空');
+                    passed = false;
+                }else{
+                    this.bindingParamFormValidate.value = false;
+                    passed &= true;
+                }
+                return passed;
+            }
+        },
+        computed:{
+            headerList:{
+                get:function(){
+                    return this.form.headerList.join('\n');
+                },
+                set:function (newVal) {
+                    let result = '';
+                    let resultArr = [];
+                    if (newVal) {
+                        resultArr = newVal.split("\n");
+                        resultArr.forEach(c=>{
+                            if (c.trim()) {
+                                result += '[' + c.trim() + ']';
+                            }
+                        })
+                    }
+                    this.form.headerList = resultArr;
+                    this.form.headers = result;
+                }
+            },
+            bindingParamsMap: {
+                get:function(){
+                    let arr = [];
+                    let json = this.form.bindingParamsMap;
+                    for (let key in json) {
+                        arr.push({'key':key,'val':json[key]})
+                    }
+                    return arr;
+                },
+            }
+        },
+        updated:function () {
+            let $this = this;
+            let $switch = $('[data-toggle="switch"]');
+            $switch.bootstrapSwitch('destroy');
+            $switch.bootstrapSwitch().on('switchChange.bootstrapSwitch', function (event, state) {
+                console.log(event);
+                Vue.set($this.form, 'openScript', state);
+            })
+        }
+    });
+    $('#edit-modal').on('show.bs.modal', function (event) {
+        vue.$data.bindingParamForm = {}
+        vue.$data.errors = [];
+        vue.$data.bindingParamFormValidate = {};
+    }).on('hide.bs.modal',function (event) {
+        vue.$data.bindingParamForm = {}
+        vue.$data.errors = [];
+        vue.$data.bindingParamFormValidate = {};
+    })
+</script>
+</html>

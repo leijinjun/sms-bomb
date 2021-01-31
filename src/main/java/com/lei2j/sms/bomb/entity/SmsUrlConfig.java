@@ -1,7 +1,15 @@
 package com.lei2j.sms.bomb.entity;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.CreationTimestamp;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author leijinjun
@@ -11,9 +19,20 @@ import java.time.LocalDateTime;
 @Entity
 public class SmsUrlConfig {
 
+    public static final Pattern HEADER_COMPILE = Pattern.compile("\\[.+?]");
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+
+    @Column(name = "website_name")
+    private String websiteName;
+
+    @Column(name = "icon")
+    private String icon;
+
+    @Column(name = "website")
+    private String website;
 
     @Column(name = "sms_url",nullable = false)
     private String smsUrl;
@@ -28,16 +47,20 @@ public class SmsUrlConfig {
     private LocalDateTime createAt;
 
     @Column(name = "update_at")
+    @CreationTimestamp
     private LocalDateTime updateAt;
 
     @Column(name = "is_normal")
     private Boolean normal;
 
-    @Column(name = "business_type")
-    private String businessType;
+    @Column(name = "business_name")
+    private String businessName;
 
     @Column(name = "success_code")
     private String successCode;
+
+    @Column(name = "end_code")
+    private String endCode;
 
     @Column(name = "script_name")
     private String scriptName;
@@ -68,16 +91,21 @@ public class SmsUrlConfig {
     public SmsUrlConfig() {
     }
 
-    public SmsUrlConfig(Integer id, String smsUrl, String phoneParamName, String bindingParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessType, String successCode, String scriptName, String scriptContent, String scriptPath, String requestMethod, String contentType, String headers, Boolean openScript, LocalDateTime lastUsedTime) {
+    public SmsUrlConfig(Integer id, String websiteName, String icon, String website, String smsUrl, String phoneParamName, String bindingParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessName, String successCode,
+                        String endCode, String scriptName, String scriptContent, String scriptPath, String requestMethod, String contentType, String headers, Boolean openScript, String responseType, LocalDateTime lastUsedTime) {
         this.id = id;
+        this.websiteName = websiteName;
+        this.icon = icon;
+        this.website = website;
         this.smsUrl = smsUrl;
         this.phoneParamName = phoneParamName;
         this.bindingParams = bindingParams;
         this.createAt = createAt;
         this.updateAt = updateAt;
         this.normal = normal;
-        this.businessType = businessType;
+        this.businessName = businessName;
         this.successCode = successCode;
+        this.endCode = endCode;
         this.scriptName = scriptName;
         this.scriptContent = scriptContent;
         this.scriptPath = scriptPath;
@@ -85,7 +113,30 @@ public class SmsUrlConfig {
         this.contentType = contentType;
         this.headers = headers;
         this.openScript = openScript;
+        this.responseType = responseType;
         this.lastUsedTime = lastUsedTime;
+    }
+
+    public List<String> getHeaderList(){
+        List<String> headerList = new ArrayList<>();
+        //解析固定请求头
+        if (StringUtils.isNotBlank(headers)) {
+            Matcher matcher = SmsUrlConfig.HEADER_COMPILE.matcher(headers);
+            while (matcher.find()) {
+                String group = matcher.group();
+                String headerPair = group.substring(1, group.length() - 1);
+                headerList.add(headerPair);
+            }
+        }
+        return headerList;
+    }
+
+    public Map<String, String> getBindingParamsMap() {
+        if (StringUtils.isNotBlank(bindingParams)) {
+            return JSON.parseObject(bindingParams, new TypeReference<LinkedHashMap<String, String>>() {
+            });
+        }
+        return Collections.emptyMap();
     }
 
     public Integer getId() {
@@ -136,12 +187,12 @@ public class SmsUrlConfig {
         this.normal = normal;
     }
 
-    public String getBusinessType() {
-        return businessType;
+    public String getBusinessName() {
+        return businessName;
     }
 
-    public void setBusinessType(String businessType) {
-        this.businessType = businessType;
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
     }
 
     public String getSuccessCode() {
@@ -232,18 +283,54 @@ public class SmsUrlConfig {
         this.responseType = responseType;
     }
 
+    public String getWebsiteName() {
+        return websiteName;
+    }
+
+    public void setWebsiteName(String websiteName) {
+        this.websiteName = websiteName;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(String website) {
+        this.website = website;
+    }
+
+    public String getEndCode() {
+        return endCode;
+    }
+
+    public void setEndCode(String endCode) {
+        this.endCode = endCode;
+    }
+
     @Override
     public String toString() {
         return "SmsUrlConfig{" +
                 "id=" + id +
+                ", websiteName='" + websiteName + '\'' +
+                ", icon='" + icon + '\'' +
+                ", website='" + website + '\'' +
                 ", smsUrl='" + smsUrl + '\'' +
                 ", phoneParamName='" + phoneParamName + '\'' +
                 ", bindingParams='" + bindingParams + '\'' +
                 ", createAt=" + createAt +
                 ", updateAt=" + updateAt +
                 ", normal=" + normal +
-                ", businessType='" + businessType + '\'' +
+                ", businessName='" + businessName + '\'' +
                 ", successCode='" + successCode + '\'' +
+                ", endCode='" + endCode + '\'' +
                 ", scriptName='" + scriptName + '\'' +
                 ", scriptContent='" + scriptContent + '\'' +
                 ", scriptPath='" + scriptPath + '\'' +
@@ -251,8 +338,8 @@ public class SmsUrlConfig {
                 ", contentType='" + contentType + '\'' +
                 ", headers='" + headers + '\'' +
                 ", openScript=" + openScript +
-                ", lastUsedTime=" + lastUsedTime +
                 ", responseType='" + responseType + '\'' +
+                ", lastUsedTime=" + lastUsedTime +
                 '}';
     }
 }

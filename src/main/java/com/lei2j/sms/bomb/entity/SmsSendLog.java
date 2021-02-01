@@ -42,6 +42,8 @@ public class SmsSendLog {
     @Column(name = "response_status")
     private String responseStatus;
 
+    private String requestId;
+
     public Long getId() {
         return id;
     }
@@ -112,5 +114,13 @@ public class SmsSendLog {
 
     public void setResponseStatus(String responseStatus) {
         this.responseStatus = responseStatus;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 }

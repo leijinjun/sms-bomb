@@ -4,9 +4,12 @@ import com.lei2j.sms.bomb.dto.SmsSendDTO;
 import com.lei2j.sms.bomb.repository.SmsSendLogRepository;
 import com.lei2j.sms.bomb.service.impl.SmsSendService;
 import com.lei2j.sms.bomb.web.interceptor.ClientIpInterceptor;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.time.*;
 import java.time.temporal.ChronoField;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -56,11 +61,21 @@ public class SmsBombController {
         if (ipCount >= maxSendCount) {
             return ResponseEntity.unprocessableEntity().body("IP受限");
         }
+        String requestId = System.nanoTime() + "00" + RandomStringUtils.randomNumeric(7);
         SmsSendDTO smsSendDTO = new SmsSendDTO();
         smsSendDTO.setPhone(phone);
         smsSendDTO.setClientIp(clientIp);
+        smsSendDTO.setRequestId(requestId);
         smsSendService.send(smsSendDTO);
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/smsBomb/getResult")
+    public ResponseEntity<List<SmsSendLogRepository.GroupStatus>> getResult(String requestId) {
+        if (StringUtils.isBlank(requestId)) {
+            return ResponseEntity.badRequest().build();
+        }
+        List<SmsSendLogRepository.GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
+        return ResponseEntity.ok(mapList);
+    }
 }

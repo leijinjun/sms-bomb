@@ -10,6 +10,8 @@ public class SmsSendDTO {
 
     private String clientIp;
 
+    private String requestId;
+
     public String getPhone() {
         return phone;
     }
@@ -26,11 +28,20 @@ public class SmsSendDTO {
         this.clientIp = clientIp;
     }
 
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
     @Override
     public String toString() {
         return "SmsSendDTO{" +
                 "phone='" + phone + '\'' +
                 ", clientIp='" + clientIp + '\'' +
+                ", requestId='" + requestId + '\'' +
                 '}';
     }
 }

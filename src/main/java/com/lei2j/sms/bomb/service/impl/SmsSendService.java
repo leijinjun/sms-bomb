@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -59,6 +60,9 @@ public class SmsSendService extends CommonServiceImpl {
     }
 
     public void send(SmsSendDTO smsSendDTO) {
+        if (StringUtils.isBlank(smsSendDTO.getPhone())) {
+            return;
+        }
         Integer windowSize = sendSize;
         Integer count = smsUrlConfigRepository.countByNormalEquals(Boolean.TRUE);
         if (windowSize > count) {
@@ -91,7 +95,7 @@ public class SmsSendService extends CommonServiceImpl {
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
-                        saveAsyncSendLog(smsSendDTO.getPhone(), smsSendDTO.getClientIp(), entity.getSmsUrl(), paramsMap, response, duration, success);
+                        saveAsyncSendLog(smsSendDTO, entity.getSmsUrl(), paramsMap, response, duration, success);
                     }
                 });
             }
@@ -142,11 +146,12 @@ public class SmsSendService extends CommonServiceImpl {
         }
     }
 
-    private void saveAsyncSendLog(String phone, String ip, String smsUrl, Object params, String response, int requestDuration, boolean success) {
+    private void saveAsyncSendLog(SmsSendDTO smsSendDTO, String smsUrl, Object params, String response, int requestDuration, boolean success) {
         logExecutorService.execute(() -> {
             SmsSendLog record = new SmsSendLog();
-            record.setPhone(phone);
-            record.setIp(ip);
+            record.setRequestId(smsSendDTO.getRequestId());
+            record.setPhone(Base64.getEncoder().encodeToString(smsSendDTO.getPhone().getBytes(StandardCharsets.UTF_8)));
+            record.setIp(smsSendDTO.getClientIp());
             record.setSmsUrl(smsUrl);
             record.setParams(JSONObject.toJSONString(params));
             record.setResponse(response);

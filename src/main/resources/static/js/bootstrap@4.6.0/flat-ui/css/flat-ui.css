@@ -2453,25 +2453,8 @@ fieldset[disabled] .input-group-btn .btn-default.active {
 }
 
 .progress-bar {
-  background: #1abc9c;
   line-height: 12px;
   box-shadow: none;
-}
-
-.progress-bar-success {
-  background-color: #2ecc71;
-}
-
-.progress-bar-warning {
-  background-color: #f1c40f;
-}
-
-.progress-bar-danger {
-  background-color: #e74c3c;
-}
-
-.progress-bar-info {
-  background-color: #3498db;
 }
 
 .ui-slider {

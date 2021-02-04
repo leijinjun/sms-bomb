@@ -1,7 +1,9 @@
 package com.lei2j.sms.bomb.web.controller;
 
 import com.lei2j.sms.bomb.dto.SmsSendDTO;
+import com.lei2j.sms.bomb.entity.SmsSendLog;
 import com.lei2j.sms.bomb.repository.SmsSendLogRepository;
+import com.lei2j.sms.bomb.repository.SmsSendLogRepository.GroupStatus;
 import com.lei2j.sms.bomb.service.impl.SmsSendService;
 import com.lei2j.sms.bomb.web.interceptor.ClientIpInterceptor;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -18,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.*;
 import java.time.temporal.ChronoField;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -36,6 +38,9 @@ public class SmsBombController {
 
     @Value("${smb.bomb.phone.send.day.max.count}")
     private Integer maxSendCount;
+
+    @Value("${smb.bomb.send.window.size}")
+    private Integer sendSize;
 
     @Autowired
     public SmsBombController(SmsSendService smsSendService,SmsSendLogRepository smsSendLogRepository) {
@@ -67,15 +72,22 @@ public class SmsBombController {
         smsSendDTO.setClientIp(clientIp);
         smsSendDTO.setRequestId(requestId);
         smsSendService.send(smsSendDTO);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(requestId);
     }
 
     @GetMapping("/smsBomb/getResult")
-    public ResponseEntity<List<SmsSendLogRepository.GroupStatus>> getResult(String requestId) {
+    public ResponseEntity<Object[]> getResult(String requestId) {
         if (StringUtils.isBlank(requestId)) {
             return ResponseEntity.badRequest().build();
         }
-        List<SmsSendLogRepository.GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
-        return ResponseEntity.ok(mapList);
+        List<GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
+        int totalCount = mapList.stream().mapToInt(GroupStatus::getTotalCount).sum();
+        Object[] result = new Object[]{0, 0};
+        if (totalCount >= sendSize) {
+            result[0] = 1;
+        }
+        result[1] =
+                mapList.stream().filter(p -> Objects.equals(p.getResponseStatus(), SmsSendLog.SUCCESS_STATUS)).mapToInt(GroupStatus::getTotalCount).sum();
+        return ResponseEntity.ok(result);
     }
 }

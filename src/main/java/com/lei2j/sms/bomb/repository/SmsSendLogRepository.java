@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author leijinjun
@@ -25,8 +24,8 @@ public interface SmsSendLogRepository extends CommonJpaRepository<SmsSendLog,Int
 
     long countByIpEqualsAndCreateAtBetween(String ip, LocalDateTime before, LocalDateTime after);
 
-    long countByRequestIdEqualsAndResponseStatusEquals(String requestId, String responseStatus);
-
     @Query(value ="select count(responseStatus) as totalCount,responseStatus as responseStatus from SmsSendLog where requestId =?1 group by responseStatus")
     List<GroupStatus> groupByResponseStatus(String requestId);
+
+    long countByRequestIdEqualsAndResponseStatusEquals(String requestId, String responseStatus);
 }

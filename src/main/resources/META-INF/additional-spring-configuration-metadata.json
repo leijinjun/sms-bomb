@@ -9,5 +9,10 @@
       "name": "smb.bomb.send.window.size",
       "type": "java.lang.String",
       "description": "Description for smb.bomb.send.window.size."
+    },
+    {
+      "name": "mvc.static.resource.base",
+      "type": "java.lang.String",
+      "description": "Description for mvc.static.resource.base."
     }
   ] }

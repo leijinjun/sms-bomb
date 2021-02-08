@@ -11,7 +11,7 @@
     <logger name="org.springframework.boot.autoconfigure.logging" level="INFO"/>
     <logger name="org.apache.http" level="DEBUG"/>
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE"/>
-    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/spring.log}"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/${spring.application.name}.log}"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
     <include resource="file-appender.xml" />
     <!-- ============ -->

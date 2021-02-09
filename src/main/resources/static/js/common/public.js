@@ -57,13 +57,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    console.error(error);
-                    let result = {
-                        success:false,
-                        error:500,
-                        errorDescription:(navigator.language || navigator.browserLanguage).toLowerCase().indexOf('zh')>-1?'网络错误':'Network Error'
-                    };
-                    resolve(result);
+                    reject(error);
                 }
             })
         });
@@ -75,13 +69,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    console.error(error);
-                    let result = {
-                        success:false,
-                        error:500,
-                        errorDescription:(navigator.language || navigator.browserLanguage).toLowerCase().indexOf('zh')>-1?'网络错误':'Network Error'
-                    };
-                    resolve(result);
+                    reject(error);
                 }
             })
         });
@@ -100,13 +88,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    console.error(error);
-                    let result = {
-                        success:false,
-                        error:500,
-                        errorDescription:(navigator.language || navigator.browserLanguage).toLowerCase().indexOf('zh')>-1?'网络错误':'Network Error'
-                    };
-                    resolve(result);
+                    reject(error);
                 }
             })
         })
@@ -125,13 +107,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    console.error(error);
-                    let result = {
-                        success:false,
-                        error:500,
-                        errorDescription:(navigator.language || navigator.browserLanguage).toLowerCase().indexOf('zh')>-1?'网络错误':'Network Error'
-                    };
-                    resolve(result);
+                    reject(error);
                 }
             })
         })

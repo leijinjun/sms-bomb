@@ -73,7 +73,7 @@
                         $this.getResult(res);
                     }, 1500);
                 }).catch(function (reason) {
-                    gft.alert.error(reason, 2000);
+                    gft.alert.error(reason.status + ":" + reason.error, 2000);
                 })
             },
             getResult(requestId){
@@ -90,9 +90,6 @@
                             $this.getResult(requestId);
                         }, 1500);
                     }).catch(function (reason) {
-                        setTimeout(function () {
-                            $this.getResult(requestId);
-                        }, 1500);
                 })
             },
             checkForm(){

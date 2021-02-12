@@ -106,8 +106,8 @@ let $http = {
                 success:function(result){
                     resolve(result);
                 },
-                error:function(xhr,status,error){
-                    reject(error);
+                error:function(xhr){
+                    reject(xhr.responseJSON);
                 }
             })
         })

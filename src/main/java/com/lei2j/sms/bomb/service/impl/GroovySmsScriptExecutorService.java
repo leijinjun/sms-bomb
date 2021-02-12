@@ -1,18 +1,16 @@
 package com.lei2j.sms.bomb.service.impl;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
-import script.SmsCommonScript;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.URL;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,11 +31,14 @@ public class GroovySmsScriptExecutorService {
 
     private static final Map<String, ScriptCache> SCRIPT_CACHE = new ConcurrentHashMap<>(64);
 
-    private static final Map<String,GroovyObject> INSTANCE_CACHE = new ConcurrentHashMap<>(64);
+    private final GroovyObject defaultObject;
 
-    static {
-        URL resource = GroovySmsScriptExecutorService.class.getResource("/script");
-        LOADER.addURL(resource);
+    public GroovySmsScriptExecutorService() throws Exception {
+        String sc = "com/lei2j/sms/bomb/script/SmsCommonScript.groovy";
+        ClassPathResource classPathResource = new ClassPathResource(sc, this.getClass().getClassLoader());
+        InputStream inputStream = classPathResource.getInputStream();
+        Class<?> defaultClazz = LOADER.parseClass(new InputStreamReader(inputStream), "SmsCommonScript.groovy");
+        defaultObject = (GroovyObject) defaultClazz.newInstance();
     }
 
     @Value("${smb.bomb.script.base.path}")
@@ -55,10 +56,12 @@ public class GroovySmsScriptExecutorService {
                 Path filePath = Paths.get(base, path);
                 BufferedReader reader = Files.newBufferedReader(filePath, StandardCharsets.UTF_8);
                 cls = LOADER.parseClass(reader, path);
+            } else {
+                throw new IllegalArgumentException("script content or scriptPath is null");
             }
         }
         if (cls == null) {
-            return new SmsCommonScript();
+            return defaultObject;
         }
         return (GroovyObject) cls.newInstance();
     }

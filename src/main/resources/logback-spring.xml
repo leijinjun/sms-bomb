@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration>
-    <contextName>${project.name}</contextName>
+    <contextName>logback</contextName>
+    <springProperty name="applicantName" scope="context" source="spring.application.name"/>
     <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
     <!-- 通用日志配置 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
 <!--    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/sms-bomb.log}"/>-->
-    <property name="LOG_FILE" value="/opt/smsBomb/sms-bomb.log"/>
+    <property name="LOG_FILE" value="/opt/smsBomb/${applicantName}.log"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
     <include resource="file-appender.xml" />
     <logger name="org.springframework.web" level="DEBUG"/>

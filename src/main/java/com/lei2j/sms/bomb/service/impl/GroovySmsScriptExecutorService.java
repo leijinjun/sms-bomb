@@ -82,7 +82,7 @@ public class GroovySmsScriptExecutorService {
         return instance.invokeMethod(method, args);
     }
 
-    public void preInvoke(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws Exception {
+    public void preInvoke(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) throws Exception {
         preInvoke0(parse(smsUrlConfig, groovyScriptBasePath), "preProcess", smsUrlConfig, paramsMap, headerMap);
     }
 

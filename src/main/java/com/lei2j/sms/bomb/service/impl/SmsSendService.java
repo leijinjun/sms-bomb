@@ -73,7 +73,7 @@ public class SmsSendService extends CommonServiceImpl {
             for (SmsUrlConfig entity : list) {
                 executorService.submit(() -> {
                     Map<String, String> headerMap = new LinkedHashMap<>(6);
-                    Map<String,Object> paramsMap = new LinkedHashMap<>(6);
+                    Map<String,String> paramsMap = new LinkedHashMap<>(6);
                     int duration = -1;
                     Boolean success = Boolean.FALSE;
                     String response = null;
@@ -102,7 +102,7 @@ public class SmsSendService extends CommonServiceImpl {
         }
     }
 
-    private String request(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws IOException {
+    private String request(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) throws IOException {
         List<String> headerList = smsUrlConfig.getHeaderList();
         headerList.forEach((headerPair) -> {
             String[] split = headerPair.split(":", 2);
@@ -125,7 +125,7 @@ public class SmsSendService extends CommonServiceImpl {
         if (StringUtils.isNotBlank(bindingParams)) {
             JSONObject object = JSONObject.parseObject(bindingParams);
             for (Map.Entry<String, Object> entry : object.entrySet()) {
-                paramsMap.put(entry.getKey(), entry.getValue());
+                paramsMap.put(entry.getKey(), entry.getValue().toString());
             }
         }
         String requestMethod = smsUrlConfig.getRequestMethod().toUpperCase();

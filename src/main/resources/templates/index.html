@@ -86,6 +86,7 @@
                             return;
                         }
                         let successNum = res[1];
+                        Vue.set($this, 'successNum', successNum);
                         setTimeout(function () {
                             $this.getResult(requestId);
                         }, 1500);

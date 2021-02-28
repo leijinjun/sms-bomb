@@ -76,6 +76,7 @@
                     <select class="form-control" id="formResponseType" v-model="form.responseType">
                         <option value="json">JSON</option>
                         <option value="xml">XML</option>
+                        <option value="jsonp">JSONP</option>
                         <!--<option value="text">TEXT</option>-->
                     </select>
                 </div>
@@ -203,10 +204,10 @@
 <script th:src="@{{contextPath}/js/jquery@3.3.1/jquery-3.3.1.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/bootstrap@4.6.0/js/bootstrap.bundle.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/flat-ui.min.js(contextPath=${application.smsBombStaticPath})}"></script>
-<script th:src="@{{contextPath}/js/common/public.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/common/public.js?v=1.0.1(contextPath=${application.smsBombStaticPath})}"></script>
 <script>
     let contextPath = '[[${application.contextPath}]]';
-    let  id = '[[${param.id}]]';
+    const id = '[[${param.id}]]';
     let vue = new Vue({
         el:'#app',
         data:{
@@ -275,7 +276,7 @@
                 $http.post(contextPath+'/url/config/save',body)
                 .then(function (res) {
                     gft.alert.error('操作成功', 2000);
-                    window.location = 'list';
+                    window.location = './list';
                 }).catch(function (reason) {
                     gft.alert.error(reason, 2000);
                 })

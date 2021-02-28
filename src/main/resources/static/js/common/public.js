@@ -82,7 +82,6 @@ let $http = {
                 type:'POST',
                 contentType:contentType?contentType:'application/x-www-form-urlencoded',
                 data:data,
-                dataType:'json',
                 async:false,
                 success:function(result){
                     resolve(result);
@@ -102,11 +101,12 @@ let $http = {
                 type:'POST',
                 contentType:contentType?contentType:'application/x-www-form-urlencoded',
                 data:data,
-                dataType:'json',
                 success:function(result){
+                    alert(1)
                     resolve(result);
                 },
                 error:function(xhr){
+                    console.log(xhr)
                     reject(xhr.responseJSON);
                 }
             })

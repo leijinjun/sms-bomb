@@ -9,6 +9,7 @@ trait SmsScript {
     enum ResponseTypeEnum {
         JSON,
         XML,
+        JSONP,
         TEXT;
     }
 
@@ -42,5 +43,10 @@ trait SmsScript {
             return Boolean.TRUE
         }
         throw new UnsupportedOperationException(responseType)
+    }
+
+    String parseJsonp(String callback, String jsonp, int paramNumber, int paramIndex) {
+        def response = jsonp.substring(callback.length() + 1, jsonp.length() - 1)
+        response.split(",", paramNumber)[paramIndex]
     }
 }

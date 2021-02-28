@@ -102,11 +102,9 @@ let $http = {
                 contentType:contentType?contentType:'application/x-www-form-urlencoded',
                 data:data,
                 success:function(result){
-                    alert(1)
                     resolve(result);
                 },
                 error:function(xhr){
-                    console.log(xhr)
                     reject(xhr.responseJSON);
                 }
             })
@@ -137,9 +135,10 @@ const gft = {
     alert:{
         message:function(type,tips,timeout){
             let idSelector = 'vue2du3d-alert';
-            let containerTemplate = '<div id="' + idSelector + '" style="position: absolute;top: 10px;right:10px;"></div>';
+            let containerTemplate = '<div id="' + idSelector + '" style="max-width: 190px;position: fixed;top:' +
+                ' 5px;z-index:10000000;right: 0;margin: 0;padding: 2px;pointer-events: auto;"></div>';
             let template = '<div class="alert alert-{{type}} alert-dismissible fade show" role="alert">' +
-                '<div class="content">{{tips}}</div>'+
+                '<div class="content" style="word-wrap:break-word;word-break:break-all;">{{tips}}</div>'+
                 '<button type="button" class="close" data-rand="{{rand}}" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>';
             let rand = new Date().getTime().toString();
             template = template.replace('{{tips}}', tips).replace('{{rand}}', rand).replace("{{type}}", type);

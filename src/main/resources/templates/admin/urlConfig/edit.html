@@ -275,10 +275,10 @@
                 }
                 $http.post(contextPath+'/url/config/save',body)
                 .then(function (res) {
-                    gft.alert.error('操作成功', 2000);
+                    gft.alert.success('操作成功', 2000);
                     window.location = './list';
                 }).catch(function (reason) {
-                    gft.alert.error(reason, 2000);
+                    gft.alert.error(reason, 3000);
                 })
             },
             removeItemBindingParams:function (key) {

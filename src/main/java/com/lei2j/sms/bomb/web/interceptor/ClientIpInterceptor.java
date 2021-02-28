@@ -17,12 +17,12 @@ public class ClientIpInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String clientIp;
-        String ip = request.getParameter("X-Forwarded-For");
+        String ip = request.getHeader("X-Forwarded-For");
         if (StringUtils.isNotBlank(ip) && isNotUnknown(ip)) {
             clientIp = ip.split(",", 1)[0];
-        } else if (StringUtils.isNotBlank(ip = request.getParameter("X-Real-IP")) && isNotUnknown(ip)) {
+        } else if (StringUtils.isNotBlank(ip = request.getHeader("X-Real-IP")) && isNotUnknown(ip)) {
             clientIp = ip;
-        } else if (StringUtils.isNotBlank(ip = request.getParameter("Proxy-Client-IP")) && isNotUnknown(ip)) {
+        } else if (StringUtils.isNotBlank(ip = request.getHeader("Proxy-Client-IP")) && isNotUnknown(ip)) {
             clientIp = ip;
         } else {
             clientIp = request.getRemoteAddr();

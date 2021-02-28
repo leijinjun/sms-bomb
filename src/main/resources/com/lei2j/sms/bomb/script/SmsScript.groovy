@@ -13,17 +13,17 @@ trait SmsScript {
         TEXT;
     }
 
-    void preProcess(SmsUrlConfig smsBomb, Map<String, Object> paramsMap, Map<String, String> headerMap) {}
+    void preProcess(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) {}
 
-    Boolean postProcess(SmsUrlConfig smsBomb, String response) {
+    Boolean postProcess(SmsUrlConfig smsUrlConfig, String response) {
         if (response == null || response.isEmpty()) {
             return Boolean.TRUE
         }
-        def successCode = smsBomb.getSuccessCode()
+        def successCode = smsUrlConfig.getSuccessCode()
         if (successCode == null || successCode.isEmpty()) {
             return Boolean.TRUE
         }
-        def responseType = smsBomb.getResponseType()
+        def responseType = smsUrlConfig.getResponseType()
         boolean isXml = ResponseTypeEnum.XML.name().equalsIgnoreCase(responseType)
         boolean isJson = ResponseTypeEnum.JSON.name().equalsIgnoreCase(responseType)
         if (isXml || isJson) {

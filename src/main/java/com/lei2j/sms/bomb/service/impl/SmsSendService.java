@@ -94,6 +94,7 @@ public class SmsSendService extends CommonServiceImpl {
                         e.printStackTrace();
                     } catch (Exception e) {
                         e.printStackTrace();
+                        response = e.getMessage();
                     } finally {
                         saveAsyncSendLog(smsSendDTO, entity.getSmsUrl(), paramsMap, response, duration, success);
                     }

@@ -56,8 +56,8 @@ trait SmsScript {
         boolean isJson = ResponseTypeEnum.JSON.name().equalsIgnoreCase(responseType)
         if (isXml || isJson) {
             def sp = successCode.split(",", 2)
-            def keyPair = sp[0]
-            def valuePair = sp[1]
+            def keyPair = sp[0].trim()
+            def valuePair = sp[1].trim()
             def code = keyPair.split("=", 2)[1]
             def value = valuePair.split("=", 2)[1]
             def split = code.split("\\.")

@@ -197,12 +197,12 @@ public class HttpUtils {
         return get(url, cls, null);
     }
 
-    public static String get(String url, Map<String, String> paramMap, Map<String, String> headerMap) throws IOException {
+    public static String get(String url, Map<String, Object> paramMap, Map<String, String> headerMap) throws IOException {
         String requestURL = url;
         if (paramMap != null && !paramMap.isEmpty()) {
             StringJoiner params = new StringJoiner("&");
-            for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+            for (Map.Entry<String, Object> entry : paramMap.entrySet()) {
+                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8.name()));
             }
             requestURL = requestURL + "?" + params.toString();
         }
@@ -335,17 +335,17 @@ public class HttpUtils {
         return BASIC_RESPONSE_HANDLER.handleResponse(execute);
     }
 
-    public static String postFormUrlencoded(String url, Map<String, String> params) throws IOException {
+    public static String postFormUrlencoded(String url, Map<String, Object> params) throws IOException {
         return postFormUrlencoded(url, params, null);
     }
 
-    public static String postFormUrlencoded(String url, Map<String, String> params,Map<String,String> headers) throws IOException {
+    public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers) throws IOException {
         HttpPost httpPost = (HttpPost) createHttpRequest(url, HttpPost.METHOD_NAME, headers,
                 1000 * 15, 1000 * 15, 1000 * 60);
         httpPost.addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded"));
         if (params != null) {
             List<BasicNameValuePair> pairList =
-                    params.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+                    params.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue().toString())).collect(Collectors.toList());
             httpPost.setEntity(new UrlEncodedFormEntity(pairList, StandardCharsets.UTF_8));
         }
         CloseableHttpResponse execute = CLIENT.execute(httpPost);

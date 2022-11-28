@@ -2,6 +2,7 @@ package com.lei2j.sms.bomb.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.lei2j.idgen.core.IdGenerator;
 import com.lei2j.sms.bomb.repository.SmsSendLogRepository;
 import com.lei2j.sms.bomb.repository.SmsUrlConfigRepository;
 import com.lei2j.sms.bomb.util.HttpUtils;
@@ -17,8 +18,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -49,14 +52,19 @@ public class SmsSendService extends CommonServiceImpl {
 
     private final SmsUrlConfigRepository smsUrlConfigRepository;
 
+    private final IdGenerator idGenerator;
+
     @Value("${smb.bomb.send.window.size}")
     private Integer sendSize;
 
-    public SmsSendService(SmsUrlConfigRepository smsUrlConfigRepository, GroovySmsScriptExecutorService groovyScriptExecutorService,
-                          SmsSendLogRepository smsSendLogRepository) {
+    public SmsSendService(SmsUrlConfigRepository smsUrlConfigRepository,
+                          GroovySmsScriptExecutorService groovyScriptExecutorService,
+                          SmsSendLogRepository smsSendLogRepository,
+                          IdGenerator idGenerator) {
         this.smsUrlConfigRepository = smsUrlConfigRepository;
         this.groovyScriptExecutorService = groovyScriptExecutorService;
         this.smsSendLogRepository = smsSendLogRepository;
+        this.idGenerator = idGenerator;
     }
 
     public void send(SmsSendDTO smsSendDTO) {
@@ -71,64 +79,27 @@ public class SmsSendService extends CommonServiceImpl {
         List<SmsUrlConfig> list = smsUrlConfigRepository.findTopListByNormalEquals(Boolean.TRUE, windowSize);
         if (!CollectionUtils.isEmpty(list)) {
             for (SmsUrlConfig entity : list) {
-                executorService.submit(() -> {
-                    Map<String, String> headerMap = new LinkedHashMap<>(6);
-                    Map<String,String> paramsMap = new LinkedHashMap<>(6);
-                    int duration = -1;
-                    Boolean success = Boolean.FALSE;
-                    String response = null;
-                    try {
-                        headerMap.putAll(FIXED_HEADER);
-                        paramsMap.put(entity.getPhoneParamName(), smsSendDTO.getPhone());
-                        groovyScriptExecutorService.preInvoke(entity, paramsMap, headerMap);
-                        logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), paramsMap, headerMap);
-                        long startTime = System.currentTimeMillis();
-                        response = request(entity, paramsMap, headerMap);
-                        long endTime = System.currentTimeMillis();
-                        duration = (int) (endTime - startTime);
-                        logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
-                        //解析响应
-                        success = (Boolean) groovyScriptExecutorService.postInvoke(entity, response);
-                    } catch (HttpResponseException e) {
-                        response = String.format("{\"httpStatusCode\":\"%s\",\"reason\":\"%s\"}", e.getStatusCode(), e.getReasonPhrase());
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        response = e.getMessage();
-                    } finally {
-                        saveAsyncSendLog(smsSendDTO, entity.getSmsUrl(), paramsMap, response, duration, success);
-                    }
-                });
+                executorService.submit(new SmsTask(entity, smsSendDTO));
             }
         }
     }
 
-    private String request(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) throws IOException {
-        List<String> headerList = smsUrlConfig.getHeaderList();
-        headerList.forEach((headerPair) -> {
-            String[] split = headerPair.split(":", 2);
-            String name = split[0];
-            String value = split[1];
-            if (StringUtils.isNotBlank(value)) {
-                if ("cookie".equalsIgnoreCase(name)) {
-                    String o1 = headerMap.computeIfPresent("Cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
-                    String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value));
-                    if (o1 == null && o2 == null) {
-                        headerMap.put("Cookie", value);
-                    }
-                } else {
-                    headerMap.put(name, value);
-                }
-            }
-        });
-        //解析固定请求参数
-        String bindingParams = smsUrlConfig.getBindingParams();
-        if (StringUtils.isNotBlank(bindingParams)) {
-            JSONObject object = JSONObject.parseObject(bindingParams);
-            for (Map.Entry<String, Object> entry : object.entrySet()) {
-                paramsMap.put(entry.getKey(), entry.getValue().toString());
-            }
+    public void shutdown(String id) {
+        if (executorService.isShutdown() || executorService.isTerminated()) {
+            return;
         }
+        final BlockingQueue<Runnable> queue = executorService.getQueue();
+        queue.removeIf(p -> Objects.equals(id, ((SmsTask) p).smsSendDTO.getPhone()) || Objects.equals(id, ((SmsTask) p).smsSendDTO.getRequestId()));
+    }
+
+    public Boolean isFinished(String requestId) {
+        final BlockingQueue<Runnable> queue = executorService.getQueue();
+        final SmsSendDTO smsSendDTO = new SmsSendDTO();
+        smsSendDTO.setRequestId(requestId);
+        return !queue.contains(smsSendDTO);
+    }
+
+    private String request(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws IOException {
         String requestMethod = smsUrlConfig.getRequestMethod().toUpperCase();
         String smsUrl = smsUrlConfig.getSmsUrl();
         if (HttpMethod.GET.matches(requestMethod)) {
@@ -147,19 +118,65 @@ public class SmsSendService extends CommonServiceImpl {
         }
     }
 
-    private void saveAsyncSendLog(SmsSendDTO smsSendDTO, String smsUrl, Object params, String response, int requestDuration, boolean success) {
+    private void saveAsyncSendLog(SmsSendDTO smsSendDTO, SmsUrlConfig smsUrlConfig, Object params, String response,
+                                  int requestDuration, boolean success) {
         logExecutorService.execute(() -> {
             SmsSendLog record = new SmsSendLog();
+            record.setId((Long) idGenerator.next());
             record.setRequestId(smsSendDTO.getRequestId());
+            record.setWebSiteName(smsUrlConfig.getWebsiteName());
             record.setPhone(Base64.getEncoder().encodeToString(smsSendDTO.getPhone().getBytes(StandardCharsets.UTF_8)));
             record.setIp(smsSendDTO.getClientIp());
-            record.setSmsUrl(smsUrl);
+            record.setSmsUrl(smsUrlConfig.getSmsUrl());
             record.setParams(JSONObject.toJSONString(params));
             record.setResponse(response);
             record.setRequestDuration(requestDuration);
             record.setResponseStatus(success ? SmsSendLog.SUCCESS_STATUS : SmsSendLog.FAILURE_STATUS);
+            record.setCreateAt(LocalDateTime.now());
             smsSendLogRepository.save(record);
         });
+    }
+
+    private class SmsTask implements Runnable{
+
+        private final SmsUrlConfig entity;
+
+        private final SmsSendDTO smsSendDTO;
+
+        public SmsTask(SmsUrlConfig entity, SmsSendDTO smsSendDTO) {
+            this.entity = entity;
+            this.smsSendDTO = smsSendDTO;
+        }
+
+        @Override
+        public void run() {
+            Map<String, String> headerMap = new LinkedHashMap<>(6);
+            Map<String,Object> paramsMap = new LinkedHashMap<>(6);
+            int duration = -1;
+            Boolean success = Boolean.FALSE;
+            String response = null;
+            try {
+                headerMap.putAll(FIXED_HEADER);
+                paramsMap.put(entity.getPhoneParamName(), smsSendDTO.getPhone());
+                groovyScriptExecutorService.preInvoke(entity, paramsMap, headerMap);
+                logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), paramsMap, headerMap);
+                long startTime = System.currentTimeMillis();
+                response = request(entity, paramsMap, headerMap);
+                long endTime = System.currentTimeMillis();
+                duration = (int) (endTime - startTime);
+                logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
+                //解析响应
+                success = (Boolean) groovyScriptExecutorService.postInvoke(entity, response);
+            } catch (HttpResponseException e) {
+                response = String.format("{\"httpStatusCode\":\"%s\",\"reason\":\"%s\"}", e.getStatusCode(), e.getReasonPhrase());
+                e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+                response = e.getMessage();
+            } finally {
+                saveAsyncSendLog(smsSendDTO, entity, paramsMap, response, duration, success);
+            }
+        }
     }
 }
 

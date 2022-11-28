@@ -1,5 +1,6 @@
 package com.lei2j.sms.bomb.web.controller;
 
+import com.lei2j.idgen.core.IdGenerator;
 import com.lei2j.sms.bomb.base.entity.Pager;
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
 import com.lei2j.sms.bomb.repository.SmsUrlConfigRepository;
@@ -24,9 +25,13 @@ public class SmsUrlConfigController {
 
     private final SmsUrlConfigRepository smsUrlConfigRepository;
 
+    private final IdGenerator idGenerator;
+
     @Autowired
-    public SmsUrlConfigController(SmsUrlConfigRepository smsUrlConfigRepository) {
+    public SmsUrlConfigController(SmsUrlConfigRepository smsUrlConfigRepository,
+                                  IdGenerator idGenerator) {
         this.smsUrlConfigRepository = smsUrlConfigRepository;
+        this.idGenerator = idGenerator;
     }
 
     @GetMapping("/page")
@@ -41,12 +46,12 @@ public class SmsUrlConfigController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SmsUrlConfig> get(@PathVariable("id")Integer id){
+    public ResponseEntity<SmsUrlConfig> get(@PathVariable("id")Long id){
         return ResponseEntity.of(smsUrlConfigRepository.findById(id));
     }
 
     @PostMapping("/updateStatus")
-    public ResponseEntity<Void> update(Integer id,
+    public ResponseEntity<Void> update(Long id,
                                        @RequestParam(value = "normal") Boolean normal) {
         return smsUrlConfigRepository.findById(id).map(c -> {
             c.setNormal(normal);
@@ -59,12 +64,13 @@ public class SmsUrlConfigController {
     public ResponseEntity<Void> update(SmsUrlConfig smsUrlConfig) {
         return Optional.of(smsUrlConfig)
                 .map(c -> {
-                    Integer id = c.getId();
+                    Long id = c.getId();
                     boolean isCreated = Objects.isNull(id);
                     Optional<SmsUrlConfig> configOptional = isCreated ? Optional.of(c) : smsUrlConfigRepository.findById(id);
                     return configOptional.map(t -> {
                         BeanUtils.copyProperties(c, t, "createAt", "updateAt", "lastUsedTime","normal");
                         if (isCreated) {
+                            t.setId(((Long) idGenerator.next()));
                             t.setNormal(true);
                         }
                         if (Objects.isNull(t.getCreateAt())) {

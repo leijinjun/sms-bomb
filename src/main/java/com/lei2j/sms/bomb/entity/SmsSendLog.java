@@ -15,7 +15,6 @@ public class SmsSendLog {
     public static final String FAILURE_STATUS = "FAILURE";
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String phone;
@@ -24,6 +23,9 @@ public class SmsSendLog {
 
     @Column(name = "sms_url")
     private String smsUrl;
+
+    @Column(name = "web_site_name")
+    private String webSiteName;
 
     private String params;
 
@@ -122,5 +124,13 @@ public class SmsSendLog {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public String getWebSiteName() {
+        return webSiteName;
+    }
+
+    public void setWebSiteName(String webSiteName) {
+        this.webSiteName = webSiteName;
     }
 }

@@ -1,8 +1,10 @@
 package com.lei2j.sms.bomb.script
 
+import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
+import org.apache.commons.lang3.StringUtils
 
 trait SmsScript {
 
@@ -13,7 +15,33 @@ trait SmsScript {
         TEXT;
     }
 
-    void preProcess(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) {}
+    void preProcess(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) {
+        List<String> headerList = smsUrlConfig.getHeaderList()
+        headerList.forEach((headerPair) -> {
+            String[] split = headerPair.split(":", 2)
+            String name = split[0];
+            String value = split[1];
+            if (StringUtils.isNotBlank(value)) {
+                if ("cookie".equalsIgnoreCase(name)) {
+                    String o1 = headerMap.computeIfPresent("Cookie",(key,val)->{(val + (val.endsWith(";") ? "" : ";") + value)})
+                    String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value))
+                    if (o1 == null && o2 == null) {
+                        headerMap.put("Cookie", value);
+                    }
+                } else {
+                    headerMap.put(name, value);
+                }
+            }
+        })
+        //解析固定请求参数
+        String bindingParams = smsUrlConfig.getBindingParams()
+        if (StringUtils.isNotBlank(bindingParams)) {
+            JSONObject object = JSONObject.parseObject(bindingParams)
+            for (Map.Entry<String, Object> entry : object.entrySet()) {
+                paramsMap.put(entry.getKey(), entry.getValue())
+            }
+        }
+    }
 
     Boolean postProcess(SmsUrlConfig smsUrlConfig, String response) {
         if (response == null || response.isEmpty()) {

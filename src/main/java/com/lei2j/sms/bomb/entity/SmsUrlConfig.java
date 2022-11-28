@@ -22,8 +22,7 @@ public class SmsUrlConfig {
     public static final Pattern HEADER_COMPILE = Pattern.compile("\\[.+?]");
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "website_name")
     private String websiteName;
@@ -91,7 +90,8 @@ public class SmsUrlConfig {
     public SmsUrlConfig() {
     }
 
-    public SmsUrlConfig(Integer id, String websiteName, String icon, String website, String smsUrl, String phoneParamName, String bindingParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessName, String successCode,
+    public SmsUrlConfig(Long id, String websiteName, String icon, String website, String smsUrl, String phoneParamName,
+                        String bindingParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessName, String successCode,
                         String endCode, String scriptName, String scriptContent, String scriptPath, String requestMethod, String contentType, String headers, Boolean openScript, String responseType, LocalDateTime lastUsedTime) {
         this.id = id;
         this.websiteName = websiteName;
@@ -139,11 +139,11 @@ public class SmsUrlConfig {
         return Collections.emptyMap();
     }
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -11,16 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.*;
 import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 /**
@@ -75,17 +73,23 @@ public class SmsBombController {
         return ResponseEntity.ok(requestId);
     }
 
+    @RequestMapping("/smsBomb/shutdown/{id}")
+    public ResponseEntity<Void> shutdown(@PathVariable("id") String id) {
+        smsSendService.shutdown(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/smsBomb/getResult")
-    public ResponseEntity<Object[]> getResult(String requestId) {
+    public ResponseEntity<Object[]> getResult(String requestId) throws InterruptedException {
         if (StringUtils.isBlank(requestId)) {
             return ResponseEntity.badRequest().build();
         }
+        Object[] result = new Object[]{0, 0};
+        Boolean finished = smsSendService.isFinished(requestId);
+        result[0] = Objects.equals(true, finished) ? 1 : 0;
+        TimeUnit.SECONDS.sleep(1);
         List<GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
         int totalCount = mapList.stream().mapToInt(GroupStatus::getTotalCount).sum();
-        Object[] result = new Object[]{0, 0};
-        if (totalCount >= sendSize) {
-            result[0] = 1;
-        }
         result[1] =
                 mapList.stream().filter(p -> Objects.equals(p.getResponseStatus(), SmsSendLog.SUCCESS_STATUS)).mapToInt(GroupStatus::getTotalCount).sum();
         return ResponseEntity.ok(result);

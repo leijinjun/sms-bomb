@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class GroovySmsScriptExecutorService {
 
+    private static final String SC = "/com/lei2j/sms/bomb/script/SmsCommonScript.groovy";
+
     private static final GroovyClassLoader LOADER = new GroovyClassLoader();
 
     private static final Map<String, ScriptCache> SCRIPT_CACHE = new ConcurrentHashMap<>(64);
@@ -34,8 +36,7 @@ public class GroovySmsScriptExecutorService {
     private final GroovyObject defaultObject;
 
     public GroovySmsScriptExecutorService() throws Exception {
-        String sc = "com/lei2j/sms/bomb/script/SmsCommonScript.groovy";
-        ClassPathResource classPathResource = new ClassPathResource(sc, this.getClass().getClassLoader());
+        ClassPathResource classPathResource = new ClassPathResource(SC);
         InputStream inputStream = classPathResource.getInputStream();
         Class<?> defaultClazz = LOADER.parseClass(new InputStreamReader(inputStream), "SmsCommonScript.groovy");
         defaultObject = (GroovyObject) defaultClazz.newInstance();
@@ -82,7 +83,7 @@ public class GroovySmsScriptExecutorService {
         return instance.invokeMethod(method, args);
     }
 
-    public void preInvoke(SmsUrlConfig smsUrlConfig, Map<String, String> paramsMap, Map<String, String> headerMap) throws Exception {
+    public void preInvoke(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws Exception {
         preInvoke0(parse(smsUrlConfig, groovyScriptBasePath), "preProcess", smsUrlConfig, paramsMap, headerMap);
     }
 

@@ -19,33 +19,33 @@
             <h5>短信网站来源配置</h5>
             <div class="row">
                 <form id="search-form" class="form-inline" role="form" style="width: 100%;">
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <label for="websiteName">
-                                <input type="text" class="form-control" id="websiteName" name="websiteName"
-                                       v-model="params.websiteName" placeholder="网站名称"/>
-                            </label>
-                        </div>
+                    <div class="form-group">
+                        <label for="websiteName">
+                            <input type="text" class="form-control" id="websiteName" name="websiteName"
+                                   v-model="params.websiteName" placeholder="网站名称"/>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <select class="form-control" name="normal" v-model="params.normal" style="min-width: 190px;">
+                                <option value="">请选择</option>
+                                <option value="true">正常</option>
+                                <option value="false">禁用</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <button id="search" type="button" class="btn btn-primary" @click="search()"
+                                style="margin-right: 10px;">Filter
+                        </button>
+                        <input id="resetBtn" type="button" class="btn btn-primary" value="Reset" @click="reset()"/>
+                    </div>
+                    <!--<div class="col-md-2">
+
                     </div>
                     <div class="col-md-2">
-                        <div class="form-group">
-                            <label>
-                                <select class="form-control" name="normal" v-model="params.normal" style="min-width: 190px;">
-                                    <option value="">请选择</option>
-                                    <option value="true">正常</option>
-                                    <option value="false">禁用</option>
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <div class="form-group">
-                            <button id="search" type="button" class="btn btn-primary" @click="search()"
-                                    style="margin-right: 10px;">Filter
-                            </button>
-                            <input id="resetBtn" type="button" class="btn btn-primary" value="Reset" @click="reset()"/>
-                        </div>
-                    </div>
+
+                    </div>-->
                 </form>
             </div>
             <div style="margin-top: 40px;">
@@ -53,7 +53,6 @@
                 <table class="table table-bordered table-hover table-sm">
                     <thead>
                     <tr>
-                        <th scope="col">ID</th>
                         <th scope="col">状态</th>
                         <th scope="col">创建日期</th>
                         <th scope="col">图标</th>
@@ -69,7 +68,6 @@
                     <tr v-if="pager.data.length == 0"><td colspan="10" style="text-align: center;">没有匹配的记录</td></tr>
                     <!-- 若存在表单输入值则需要设置:key,区别每一条记录 -->
                     <tr v-for="item in pager.data" v-bind:key="item.id">
-                        <td scope="row">{{item.id}}</td>
                         <td>
                             <label>
                                 <input type="checkbox" :checked="item.normal" data-toggle="switch" data-on-color="success"
@@ -207,13 +205,12 @@
             },
             updateStatus: function (id, status) {
                 $http.postWithForm(contextPath+'/url/config/updateStatus',{id:id,normal:status})
-                .then(function (res) {
-                    gft.alert.success('操作成功',2000)
-                }).catch(function (reason) {
+                    .then(function (res) {
+                        gft.alert.success('操作成功',2000)
+                    }).catch(function (reason) {
                 })
             },
             submit:function () {
-                alert(1)
             },
             reset:function(){
                 this.params={}

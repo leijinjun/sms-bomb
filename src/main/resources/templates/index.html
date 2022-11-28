@@ -25,7 +25,8 @@
                     <label for="inputPhone" class="sr-only">手机号</label>
                     <input type="text" class="form-control" id="inputPhone" placeholder="手机号" v-model="form.phone">
                 </div>
-                <button type="button" class="btn btn-primary mb-2" @click="submit()">提交</button>
+                <button type="button" class="btn btn-primary mb-2" @click="submit()">提交</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-secondary mb-2" @click="shutdown()">停止</button>
             </form>
             <div class="progress" style="height: 24px;" :style="{display:display}">
                 <div class="progress-bar progress-bar-striped" :class="{'progress-bar-animated':code===0}"
@@ -54,7 +55,8 @@
                 phone:''
             },
             successNum:0,
-            code:0
+            code:0,
+            requestId:null
         },
         created:function () {
         },
@@ -69,6 +71,7 @@
                 .then(function (res) {
                     $this.display = 'block';
                     gft.alert.success('操作成功', 2000);
+                    $this.requestId = res;
                     setTimeout(function () {
                         $this.getResult(res);
                     }, 1500);
@@ -76,17 +79,26 @@
                     gft.alert.error(reason.status + ":" + reason.error, 2000);
                 })
             },
+            shutdown:function(){
+                let $this = this;
+                if (!$this.requestId) {
+                    return;
+                }
+                $http.post("/smsBomb/shutdown/"+$this.requestId)
+                .then(function (res) {
+                });
+            },
             getResult(requestId){
                 let $this = this;
                 $http.get(contextPath + '/smsBomb/getResult', {'requestId': requestId})
                     .then(function (res) {
                         let code = res[0];
+                        let successNum = res[1];
+                        Vue.set($this, 'successNum', successNum);
                         if (code === 1) {
                             $this.code = code;
                             return;
                         }
-                        let successNum = res[1];
-                        Vue.set($this, 'successNum', successNum);
                         setTimeout(function () {
                             $this.getResult(requestId);
                         }, 1500);
@@ -102,6 +114,9 @@
                     gft.alert.error('手机号非法！', 2000);
                     return false;
                 }
+                this.code = 0;
+                this.successNum = 0;
+                this.requestId = null;
                 return true;
             }
         }

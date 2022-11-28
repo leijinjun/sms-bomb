@@ -10,7 +10,7 @@ import java.util.List;
  * @version V1.0
  * @date 2021/1/4
  **/
-public interface SmsUrlConfigRepository extends CommonJpaRepository<SmsUrlConfig, Integer> {
+public interface SmsUrlConfigRepository extends CommonJpaRepository<SmsUrlConfig, Long> {
 
     /**
      * @param normal

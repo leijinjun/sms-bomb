@@ -16,25 +16,22 @@
             <p class="lead">仅供交流学习使用。严禁滥用，骚扰他人！</p>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm">
-        </div>
-        <div class="col-sm">
+    <div class="row" style="margin-left: 30%;margin-right: 30%;">
+        <div class="col-md">
             <form class="form-inline">
                 <div class="form-group mx-sm-3 mb-2">
                     <label for="inputPhone" class="sr-only">手机号</label>
                     <input type="text" class="form-control" id="inputPhone" placeholder="手机号" v-model="form.phone">
                 </div>
                 <button type="button" class="btn btn-primary mb-2" @click="submit()">提交</button>&nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="button" class="btn btn-secondary mb-2" @click="shutdown()">停止</button>
+                <button type="button" class="btn btn-secondary mb-2" @click="shutdown()">停止</button>&nbsp;&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-secondary mb-2" @click="finish()">更新结果</button>&nbsp;&nbsp;&nbsp;&nbsp;
             </form>
             <div class="progress" style="height: 24px;" :style="{display:display}">
                 <div class="progress-bar progress-bar-striped" :class="{'progress-bar-animated':code===0}"
                      role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
                      style="width: 100%;background-color: #1abc9c;line-height: 24px;">发送条数：{{successNum}}</div>
             </div>
-        </div>
-        <div class="col-sm">
         </div>
     </div>
 </div>
@@ -87,6 +84,12 @@
                 $http.post("/smsBomb/shutdown/"+$this.requestId)
                 .then(function (res) {
                 });
+            },
+            finish:function(){
+                if (!this.requestId) {
+                    return;
+                }
+                this.getResult(this.requestId);
             },
             getResult(requestId){
                 let $this = this;

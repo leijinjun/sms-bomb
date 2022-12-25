@@ -71,7 +71,7 @@ public class SmsSendService extends CommonServiceImpl {
         if (StringUtils.isBlank(smsSendDTO.getPhone())) {
             return;
         }
-        Integer windowSize = sendSize;
+        Integer windowSize = smsSendDTO.getSendItems();
         Integer count = smsUrlConfigRepository.countByNormalEquals(Boolean.TRUE);
         if (windowSize > count) {
             windowSize = count;

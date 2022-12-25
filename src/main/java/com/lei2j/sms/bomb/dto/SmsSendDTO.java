@@ -23,6 +23,11 @@ public class SmsSendDTO {
      */
     private String requestId;
 
+    /**
+     * 发送条数
+     */
+    private Integer sendItems;
+
     public String getPhone() {
         return phone;
     }
@@ -45,6 +50,14 @@ public class SmsSendDTO {
 
     public void setRequestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public Integer getSendItems() {
+        return sendItems;
+    }
+
+    public void setSendItems(Integer sendItems) {
+        this.sendItems = sendItems;
     }
 
     @Override

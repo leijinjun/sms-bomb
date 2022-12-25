@@ -41,14 +41,15 @@ public class SmsBombController {
     private Integer sendSize;
 
     @Autowired
-    public SmsBombController(SmsSendService smsSendService,SmsSendLogRepository smsSendLogRepository) {
+    public SmsBombController(SmsSendService smsSendService, SmsSendLogRepository smsSendLogRepository) {
         this.smsSendService = smsSendService;
         this.smsSendLogRepository = smsSendLogRepository;
     }
 
     @PostMapping("/smsBomb/send")
-    public ResponseEntity<String> send(@RequestParam("phone")String phone,
-                                     HttpServletRequest request){
+    public ResponseEntity<String> send(@RequestParam("phone") String phone,
+                                       @RequestParam("sendItems") Integer sendItems,
+                                       HttpServletRequest request) {
         if (!phonePattern.asPredicate().test(phone)) {
             return ResponseEntity.badRequest().build();
         }
@@ -64,11 +65,17 @@ public class SmsBombController {
         if (ipCount >= maxSendCount) {
             return ResponseEntity.unprocessableEntity().body("IP受限");
         }
+        if (sendItems == null) {
+            sendItems = maxSendCount;
+        } else {
+            sendItems = Math.min(sendItems, maxSendCount);
+        }
         String requestId = System.nanoTime() + "00" + RandomStringUtils.randomNumeric(7);
         SmsSendDTO smsSendDTO = new SmsSendDTO();
         smsSendDTO.setPhone(phone);
         smsSendDTO.setClientIp(clientIp);
         smsSendDTO.setRequestId(requestId);
+        smsSendDTO.setSendItems(sendItems);
         smsSendService.send(smsSendDTO);
         return ResponseEntity.ok(requestId);
     }

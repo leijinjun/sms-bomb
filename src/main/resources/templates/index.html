@@ -16,12 +16,22 @@
             <p class="lead">仅供交流学习使用。严禁滥用，骚扰他人！</p>
         </div>
     </div>
-    <div class="row" style="margin-left: 30%;margin-right: 30%;">
-        <div class="col-md">
+    <div class="row" style="margin-left: 20%;margin-right: 20%;">
+        <div class="col-auto">
             <form class="form-inline">
                 <div class="form-group mx-sm-3 mb-2">
                     <label for="inputPhone" class="sr-only">手机号</label>
                     <input type="text" class="form-control" id="inputPhone" placeholder="手机号" v-model="form.phone">
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <label for="sendItems">发送条数</label>
+                    <select class="form-control" id="sendItems" v-model="form.sendItems">
+                        <option selected :value="1">1</option>
+                        <option :value="5">5</option>
+                        <option :value="10">10</option>
+                        <option :value="25">25</option>
+                        <option :value="50">50</option>
+                    </select>
                 </div>
                 <button type="button" class="btn btn-primary mb-2" @click="submit()">提交</button>&nbsp;&nbsp;&nbsp;&nbsp;
                 <button type="button" class="btn btn-secondary mb-2" @click="shutdown()">停止</button>&nbsp;&nbsp;&nbsp;&nbsp;
@@ -52,6 +62,7 @@
                 phone:''
             },
             successNum:0,
+            sendItems:null,
             code:0,
             requestId:null
         },
@@ -64,7 +75,7 @@
                     return;
                 }
                 let $this = this;
-                $http.post(contextPath+'/smsBomb/send',{phone:this.form.phone})
+                $http.post(contextPath+'/smsBomb/send',{phone:this.form.phone,sendItems: this.form.sendItems})
                 .then(function (res) {
                     $this.display = 'block';
                     gft.alert.success('操作成功', 2000);

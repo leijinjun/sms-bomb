@@ -7,6 +7,12 @@
     <title>短信网站来源配置</title>
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
+    <style>
+        .form-group {
+            margin-right: 20px;
+        }
+        .table {table-layout:fixed;word-break:break-all;}
+    </style>
 </head>
 <body>
 <div class="container-fluid" id="app">
@@ -28,7 +34,7 @@
                     <div class="form-group">
                         <label>
                             <select class="form-control" name="normal" v-model="params.normal" style="min-width: 190px;">
-                                <option value="">请选择</option>
+                                <option value="" selected>请选择状态</option>
                                 <option value="true">正常</option>
                                 <option value="false">禁用</option>
                             </select>
@@ -50,24 +56,28 @@
             </div>
             <div style="margin-top: 40px;">
                 <p><a th:href="edit" class="btn btn-primary">新增</a></p>
-                <table class="table table-bordered table-hover table-sm">
+                <table class="table table-bordered table-hover table-responsive-lg">
                     <thead>
                     <tr>
+                        <th scope="col">操作</th>
                         <th scope="col">状态</th>
-                        <th scope="col">创建日期</th>
                         <th scope="col">图标</th>
                         <th scope="col">网站</th>
                         <th scope="col">短信接口</th>
                         <th scope="col">手机号参数名</th>
-                        <th scope="col">是否开启脚本</th>
+                        <th scope="col">脚本开启</th>
                         <th scope="col">最后使用时间</th>
-                        <th scope="col" width="60">操作</th>
+                        <th scope="col">创建日期</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr v-if="pager.data.length == 0"><td colspan="10" style="text-align: center;">没有匹配的记录</td></tr>
                     <!-- 若存在表单输入值则需要设置:key,区别每一条记录 -->
                     <tr v-for="item in pager.data" v-bind:key="item.id">
+                        <td>
+                            <a :href="'edit.html?id='+item.id">编辑</a>
+                            <!--                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal" >编辑</button>-->
+                        </td>
                         <td>
                             <label>
                                 <input type="checkbox" :checked="item.normal" data-toggle="switch" data-on-color="success"
@@ -77,26 +87,21 @@
                                        v-model="item.normal">-->
                             </label>
                         </td>
-                        <td>{{item.createAt}}</td>
                         <td style="padding: 13px;">
                             <img :src="item.icon" style="border: 0;" width="75px;" height="auto;"/>
                         </td>
-                        <td><a :href="item.website" style="text-decoration: none;"
+                        <td style="max-width: 120px;"><a :href="item.website" style="text-decoration: none;"
                                :style="item.website ? '':'cursor: not-allowed;'"
                                target="_blank">{{item.websiteName}}</a></td>
-                        <td>{{item.smsUrl}}</td>
+                        <td ><div style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:60px;">{{item .smsUrl}}</div></td>
                         <td>{{item.phoneParamName}}</td>
                         <td>
                             <span v-if="item.openScript" class="text-success">启用</span>
                             <span v-else class="text-danger">关闭</span>
                         </td>
-                        <td>
-                            {{item.lastUsedTime}}
-                        </td>
-                        <td>
-                            <a :href="'edit.html?id='+item.id">编辑</a>
-                            <!--                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal" >编辑</button>-->
-                        </td>
+                        <td style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:30px;">
+                            {{item.lastUsedTime}}</td>
+                        <td style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:30px;">{{item.createAt}}</td>
                     </tr>
                     </tbody>
                 </table>

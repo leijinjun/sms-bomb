@@ -4,7 +4,7 @@ import com.lei2j.idgen.core.IdGenerator;
 import com.lei2j.sms.bomb.base.entity.Pager;
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
 import com.lei2j.sms.bomb.repository.SmsUrlConfigRepository;
-import com.lei2j.sms.bomb.util.StringPropertyMatcher;
+import com.lei2j.sms.bomb.util.IgnoreEmptyStringValueTransformer;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -39,7 +39,9 @@ public class SmsUrlConfigController {
                             @RequestParam(value = "pageNo",required = false,defaultValue = "1")Integer pageNo,
                             @RequestParam(value = "pageSize",required = false,defaultValue = "20")Integer pageSize){
         PageRequest pageRequest = PageRequest.of(Math.max(pageNo - 1, 0), pageSize, Sort.by("id").descending());
-        ExampleMatcher exampleMatcher = ExampleMatcher.matching().withMatcher("websiteName", StringPropertyMatcher.ofIgnoreStringEmpty());
+        ExampleMatcher exampleMatcher = ExampleMatcher.matching().withIgnoreNullValues()
+                .withMatcher("websiteName",
+                        ExampleMatcher.GenericPropertyMatcher.of(ExampleMatcher.StringMatcher.CONTAINING, true).transform(IgnoreEmptyStringValueTransformer.IGNORE_EMPTY));
         Example<SmsUrlConfig> example = Example.of(params, exampleMatcher);
         Page<SmsUrlConfig> page = smsUrlConfigRepository.findAll(example, pageRequest);
         return ResponseEntity.ok(Pager.convert(page));

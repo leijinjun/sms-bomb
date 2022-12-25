@@ -9,7 +9,7 @@ import java.util.Optional;
  * @author leijinjun
  * @date 2021/1/19
  **/
-public enum ExampleMatcherStringValueTransformer implements ExampleMatcher.PropertyValueTransformer{
+public enum IgnoreEmptyStringValueTransformer implements ExampleMatcher.PropertyValueTransformer{
 
     /**
      * 忽略空字符串

@@ -133,6 +133,17 @@
       <version>0.0.1</version>
     </dependency>
   </dependencies>
+  <distributionManagement>
+    <repository>
+      <id>release</id>
+      <url>https://nexus.lei2j.com:8000/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshots</id>
+      <uniqueVersion>true</uniqueVersion>
+      <url>https://nexus.lei2j.com:8000/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <build>
     <finalName>sms-bomb</finalName>

@@ -17,6 +17,11 @@ trait SmsScript {
 
     void preProcess(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) {
         List<String> headerList = smsUrlConfig.getHeaderList()
+        if (!headerMap.containsKey("Accept")) {
+            headerMap.put("Accept", "*/*")
+        }else if (!headerMap.containsKey("accept")) {
+            headerMap.put("Accept", "*/*")
+        }
         headerList.forEach((headerPair) -> {
             String[] split = headerPair.split(":", 2)
             String name = split[0];
@@ -26,10 +31,10 @@ trait SmsScript {
                     String o1 = headerMap.computeIfPresent("Cookie",(key,val)->{(val + (val.endsWith(";") ? "" : ";") + value)})
                     String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value))
                     if (o1 == null && o2 == null) {
-                        headerMap.put("Cookie", value);
+                        headerMap.put("Cookie", value)
                     }
                 } else {
-                    headerMap.put(name, value);
+                    headerMap.put(name, value)
                 }
             }
         })

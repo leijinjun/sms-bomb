@@ -49,6 +49,10 @@ trait SmsScript {
     }
 
     Boolean postProcess(SmsUrlConfig smsUrlConfig, String response) {
+        return this.postProcess(smsUrlConfig, Collections.emptyMap(), Collections.emptyMap(), response)
+    }
+
+    Boolean postProcess(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
         if (response == null || response.isEmpty()) {
             return Boolean.TRUE
         }
@@ -68,17 +72,21 @@ trait SmsScript {
             def split = code.split("\\.")
             def parseObject = isXml ? new XmlSlurper().parseText(response) : new JsonSlurper().parseText(response)
             for (int i = 0; i < split.length; i++) {
-                parseObject = parseObject.(split[i])
+                parseObject = parseObject.(split[i].trim())
             }
             parseObject = parseObject.toString()
             return parseObject == value
-        }else if (ResponseTypeEnum.TEXT.name().equalsIgnoreCase(responseType)) {
+        } else if (ResponseTypeEnum.TEXT.name().equalsIgnoreCase(responseType)) {
             return Boolean.TRUE
         }
         throw new UnsupportedOperationException(responseType)
     }
 
-    String parseJsonp(String callback, String jsonp, int paramNumber, int paramIndex) {
+    void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+    }
+
+
+    private String parseJsonp(String callback, String jsonp, int paramNumber, int paramIndex) {
         def response = jsonp.substring(callback.length() + 1, jsonp.length() - 1)
         response.split(",", paramNumber)[paramIndex]
     }

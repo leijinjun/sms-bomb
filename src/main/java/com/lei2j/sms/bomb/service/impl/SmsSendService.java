@@ -24,6 +24,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * @author leijinjun
@@ -88,6 +89,11 @@ public class SmsSendService extends CommonServiceImpl {
         List<SmsUrlConfig> list = smsUrlConfigRepository.findTopListByNormalEquals(Boolean.TRUE, windowSize);
         if (!CollectionUtils.isEmpty(list)) {
             for (SmsUrlConfig entity : list) {
+                if (entity.getMaxRetryTimes() == null) {
+                    entity.setMaxRetryTimes(maxRetryTimes);
+                }else{
+                    entity.setMaxRetryTimes(Math.min(maxRetryTimes, entity.getMaxRetryTimes()));
+                }
                 executorService.submit(new SmsTask(entity, smsSendDTO));
             }
         }
@@ -169,13 +175,21 @@ public class SmsSendService extends CommonServiceImpl {
                 paramsMap.put(entity.getPhoneParamName(), smsSendDTO.getPhone());
                 groovyScriptExecutorService.preInvoke(entity, paramsMap, headerMap);
                 logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), paramsMap, headerMap);
-                long startTime = System.currentTimeMillis();
-                response = request(entity, paramsMap, headerMap);
-                long endTime = System.currentTimeMillis();
-                duration = (int) (endTime - startTime);
-                logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
-                //解析响应
-                success = (Boolean) groovyScriptExecutorService.postInvoke(entity, response);
+                for (int i = 0; i < entity.getMaxRetryTimes(); i++) {
+                    long startTime = System.currentTimeMillis();
+                    response = request(entity, paramsMap, headerMap);
+                    long endTime = System.currentTimeMillis();
+                    duration = (int) (endTime - startTime);
+                    logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
+                    //解析响应
+                    success = (Boolean) groovyScriptExecutorService.postInvoke(entity, paramsMap, headerMap, response);
+                    if (Boolean.TRUE.equals(success)) {
+                        break;
+                    } else {
+                        groovyScriptExecutorService.retry(entity, paramsMap, headerMap, response);
+                        LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(new Random().nextInt(3) + 1));
+                    }
+                }
             } catch (HttpResponseException e) {
                 response = String.format("{\"httpStatusCode\":\"%s\",\"reason\":\"%s\"}", e.getStatusCode(), e.getReasonPhrase());
                 e.printStackTrace();

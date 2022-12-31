@@ -13,12 +13,12 @@
         <form role="form">
             <div class="row">
                 <div class="col">
-                    <label for="formIcon">网站图标地址</label>
-                    <input id="formIcon" type="text" class="form-control" placeholder="" v-model="form.icon">
-                </div>
-                <div class="col">
                     <label for="formWebsiteName">网站名称</label>
                     <input type="text" id="formWebsiteName" class="form-control" placeholder="" v-model="form.websiteName">
+                </div>
+                <div class="col">
+                    <label for="formIcon">网站图标地址</label>
+                    <input id="formIcon" type="text" class="form-control" placeholder="" v-model="form.icon">
                 </div>
             </div>
             <div class="row">
@@ -83,7 +83,7 @@
                     <select class="form-control" id="formResponseType" v-model="form.responseType">
                         <option value="json">JSON</option>
                         <option value="xml">XML</option>
-                        <option value="jsonp">JSONP</option>
+<!--                        <option value="jsonp">JSONP</option>-->
                         <!--<option value="text">TEXT</option>-->
                     </select>
                 </div>

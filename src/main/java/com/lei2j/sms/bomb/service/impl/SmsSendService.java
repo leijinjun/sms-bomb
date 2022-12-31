@@ -54,8 +54,17 @@ public class SmsSendService extends CommonServiceImpl {
 
     private final IdGenerator idGenerator;
 
-    @Value("${smb.bomb.send.window.size}")
+    /**
+     * 最大发送短信条数
+     */
+    @Value("${smb.bomb.send.window.size:3}")
     private Integer sendSize;
+
+    /**
+     * 发送短信失败时最大重试次数
+     */
+    @Value("${smb.bomb.send.retry.size:3}")
+    private Integer maxRetryTimes;
 
     public SmsSendService(SmsUrlConfigRepository smsUrlConfigRepository,
                           GroovySmsScriptExecutorService groovyScriptExecutorService,

@@ -52,3 +52,8 @@ CREATE TABLE `s_sms_url`  (
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+ALTER TABLE `sms_bomb`.`s_sms_url`
+ADD COLUMN `max_retry_times` int(0) NULL COMMENT '发送失败时，最大尝试次数' AFTER `last_used_time`;
+
+

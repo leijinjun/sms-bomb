@@ -9,6 +9,7 @@
 <body>
 <div class="container-md"  id="app">
     <div style="padding: 1.5rem;border: .2rem solid #f8f9fa;margin: 1rem -15px 0;">
+        <button type="button" class="btn btn-primary" @click="backToList">返回</button>
         <form role="form">
             <div class="row">
                 <div class="col">
@@ -68,6 +69,12 @@
                         <option value="application/x-www-form-urlencoded">application/x-www-form-urlencoded</option>
                         <option value="application/json">application/json</option>
                     </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="maxRetryTimes">最大重试次数</label>
+                    <input type="number" id="maxRetryTimes" class="form-control" placeholder="" v-model="form.maxRetryTimes">
                 </div>
             </div>
             <div class="row">
@@ -239,6 +246,7 @@
                 contentType:null,
                 headerList:[],
                 responseType:null,
+                maxRetryTimes:null
             },
         },
         created:function () {
@@ -271,7 +279,8 @@
                     requestMethod: this.form.requestMethod,
                     contentType: this.form.contentType,
                     headers: this.form.headers,
-                    responseType: this.form.responseType
+                    responseType: this.form.responseType,
+                    maxRetryTimes: this.form.maxRetryTimes
                 }
                 $http.post(contextPath+'/url/config/save',body)
                 .then(function (res) {
@@ -319,6 +328,9 @@
                     passed &= true;
                 }
                 return passed;
+            },
+            backToList:function(){
+                window.location.href = 'list.html';
             }
         },
         computed:{

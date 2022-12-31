@@ -56,8 +56,14 @@ let $http = {
                 success:function(result){
                     resolve(result);
                 },
-                error:function(xhr,status,error){
-                    reject(error);
+                error: function (xhr, status, error) {
+                    if (xhr.status == 404) {
+                        reject("404:数据不存在");
+                    } else if (xhr.status >= 500) {
+                        reject(xhr.status+":服务器错误");
+                    } else {
+                        reject(error);
+                    }
                 }
             })
         });

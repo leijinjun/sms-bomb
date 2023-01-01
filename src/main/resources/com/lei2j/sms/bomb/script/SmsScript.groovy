@@ -48,6 +48,7 @@ trait SmsScript {
         }
     }
 
+    @Deprecated
     Boolean postProcess(SmsUrlConfig smsUrlConfig, String response) {
         return this.postProcess(smsUrlConfig, Collections.emptyMap(), Collections.emptyMap(), response)
     }

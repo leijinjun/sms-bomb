@@ -25,6 +25,7 @@ import org.apache.http.ssl.SSLContexts;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -163,41 +164,46 @@ public class HttpUtils {
                              int requestTimeout,
                              int connectTimeout,
                              int socketTimeout,
-                             Map<String, String> headers) throws IOException {
+                             Map<String, String> headers,
+                             Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         Objects.requireNonNull(url, "url is null");
         HttpGet httpGet = (HttpGet) createHttpRequest(url, HttpGet.METHOD_NAME, headers,
                 requestTimeout, connectTimeout, socketTimeout);
         try (CloseableHttpResponse response = CLIENT.execute(httpGet)) {
+            if (responseHeaderMap != null) {
+                Map<String, List<HeaderElement[]>> headerListMap = Arrays.stream(response.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+                responseHeaderMap.putAll(headerListMap);
+            }
             return BASIC_RESPONSE_HANDLER.handleResponse(response);
         }
     }
 
-    public static String get(String url, int socketTimeout, Map<String, String> headers) throws IOException {
-        return get(url, 1000 * 15, 1000 * 15, socketTimeout, headers);
+    public static String get(String url, int socketTimeout, Map<String, String> headers, Map<String, String> responseHeaderMap) throws IOException {
+        return get(url, 1000 * 15, 1000 * 15, socketTimeout, headers, null);
     }
 
     public static String get(String url, int socketTimeout) throws IOException {
-        return get(url, socketTimeout, null);
-    }
-
-    public static String get(String url, Map<String, String> headers) throws IOException {
-        return get(url, 1000 * 60, headers);
+        return get(url, socketTimeout, null, null);
     }
 
     public static String get(String url) throws IOException {
-        return get(url, (Map<String, String>) null);
+        return get(url, null, null, null);
     }
 
-    public static <T> T get(String url, Class<T> cls, Map<String,String> headers) throws IOException {
-        String response = get(url, headers);
+    public static <T> T get(String url, Map<String,String> headers, Class<T> cls) throws IOException {
+        String response = get(url, headers, null);
         return JSONObject.parseObject(response, cls);
     }
 
     public static <T> T get(String url, Class<T> cls) throws IOException {
-        return get(url, cls, null);
+        return get(url, null, cls);
     }
 
     public static String get(String url, Map<String, Object> paramMap, Map<String, String> headerMap) throws IOException {
+        return get(url, paramMap, headerMap, null);
+    }
+
+    public static String get(String url, Map<String, Object> paramMap, Map<String, String> headerMap, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         String requestURL = url;
         if (paramMap != null && !paramMap.isEmpty()) {
             StringJoiner params = new StringJoiner("&");
@@ -206,7 +212,7 @@ public class HttpUtils {
             }
             requestURL = requestURL + "?" + params.toString();
         }
-        return get(requestURL, headerMap);
+        return get(requestURL, 1000 * 15, 1000 * 15, 1000 * 15, headerMap, responseHeaderMap);
     }
 
     public static InputStream getStreaming(String url, Map<String, String> headers) throws IOException {
@@ -237,7 +243,8 @@ public class HttpUtils {
                               int requestTimeout,
                               int connectTimeout,
                               int socketTimeout,
-                              Map<String, String> headers) throws IOException {
+                              Map<String, String> headers,
+                              Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         HttpPost httpPost = (HttpPost) createHttpRequest(url, HttpPost.METHOD_NAME, headers,
                 requestTimeout, connectTimeout, socketTimeout);
         httpPost.addHeader("Content-Type", "application/json");
@@ -245,12 +252,16 @@ public class HttpUtils {
             httpPost.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         }
         try (CloseableHttpResponse execute = CLIENT.execute(httpPost)) {
+            if (responseHeaderMap != null) {
+                Map<String, List<HeaderElement[]>> headerListMap = Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+                responseHeaderMap.putAll(headerListMap);
+            }
             return BASIC_RESPONSE_HANDLER.handleResponse(execute);
         }
     }
 
     public static String post(String url, String json, int socketTimeout, Map<String, String> headers) throws IOException {
-        return post(url, json, 1000 * 15, 1000 * 15, socketTimeout, headers);
+        return post(url, json, 1000 * 15, 1000 * 15, socketTimeout, headers, null);
     }
 
     public static String post(String url, String json, int socketTimeout) throws IOException {
@@ -259,6 +270,10 @@ public class HttpUtils {
 
     public static String post(String url, String json, Map<String, String> headers) throws IOException {
         return post(url, json, 1000 * 60, headers);
+    }
+
+    public static String post(String url, String json, Map<String, String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
+        return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, headers, responseHeaderMap);
     }
 
     public static String post(String url, String json) throws IOException {

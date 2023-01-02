@@ -64,21 +64,26 @@ trait SmsScript {
         def responseType = smsUrlConfig.getResponseType()
         boolean isXml = ResponseTypeEnum.XML.name().equalsIgnoreCase(responseType)
         boolean isJson = ResponseTypeEnum.JSON.name().equalsIgnoreCase(responseType)
-        if (isXml || isJson) {
-            def sp = successCode.split(",", 2)
-            def keyPair = sp[0].trim()
-            def valuePair = sp[1].trim()
-            def code = keyPair.split("=", 2)[1]
-            def value = valuePair.split("=", 2)[1]
-            def split = code.split("\\.")
-            def parseObject = isXml ? new XmlSlurper().parseText(response) : new JsonSlurper().parseText(response)
-            for (int i = 0; i < split.length; i++) {
-                parseObject = parseObject.(split[i].trim())
+        try {
+            if (isXml || isJson) {
+                def sp = successCode.split(",", 2)
+                def keyPair = sp[0].trim()
+                def valuePair = sp[1].trim()
+                def code = keyPair.split("=", 2)[1]
+                def value = valuePair.split("=", 2)[1]
+                def split = code.split("\\.")
+                def parseObject = isXml ? new XmlSlurper().parseText(response) : new JsonSlurper().parseText(response)
+                for (int i = 0; i < split.length; i++) {
+                    parseObject = parseObject.(split[i].trim())
+                }
+                parseObject = parseObject.toString()
+                return parseObject == value
+            } else if (ResponseTypeEnum.TEXT.name().equalsIgnoreCase(responseType)) {
+                return Boolean.TRUE
             }
-            parseObject = parseObject.toString()
-            return parseObject == value
-        } else if (ResponseTypeEnum.TEXT.name().equalsIgnoreCase(responseType)) {
-            return Boolean.TRUE
+        } catch (Exception e) {
+            e.printStackTrace()
+            return false
         }
         throw new UnsupportedOperationException(responseType)
     }

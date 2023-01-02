@@ -24,8 +24,8 @@ trait SmsScript {
         }
         headerList.forEach((headerPair) -> {
             String[] split = headerPair.split(":", 2)
-            String name = split[0];
-            String value = split[1];
+            String name = split[0]
+            String value = split[1]
             if (StringUtils.isNotBlank(value)) {
                 if ("cookie".equalsIgnoreCase(name)) {
                     String o1 = headerMap.computeIfPresent("Cookie",(key,val)->{(val + (val.endsWith(";") ? "" : ";") + value)})
@@ -62,38 +62,66 @@ trait SmsScript {
             return Boolean.TRUE
         }
         def responseType = smsUrlConfig.getResponseType()
-        boolean isXml = ResponseTypeEnum.XML.name().equalsIgnoreCase(responseType)
-        boolean isJson = ResponseTypeEnum.JSON.name().equalsIgnoreCase(responseType)
         try {
-            if (isXml || isJson) {
-                def sp = successCode.split(",", 2)
-                def keyPair = sp[0].trim()
-                def valuePair = sp[1].trim()
-                def code = keyPair.split("=", 2)[1]
-                def value = valuePair.split("=", 2)[1]
-                def split = code.split("\\.")
-                def parseObject = isXml ? new XmlSlurper().parseText(response) : new JsonSlurper().parseText(response)
-                for (int i = 0; i < split.length; i++) {
-                    parseObject = parseObject.(split[i].trim())
-                }
-                parseObject = parseObject.toString()
-                return parseObject == value
-            } else if (ResponseTypeEnum.TEXT.name().equalsIgnoreCase(responseType)) {
-                return Boolean.TRUE
-            }
+            return parseResponse(smsUrlConfig, paramsMap, headerMap, response, ResponseTypeEnum.valueOf(responseType))
         } catch (Exception e) {
             e.printStackTrace()
             return false
         }
-        throw new UnsupportedOperationException(responseType)
+    }
+
+    private Boolean parseResponse(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, ResponseTypeEnum responseType) {
+        def sp = smsUrlConfig.getSuccessCode().split(",", 2)
+        def keyPair = sp[0].trim()
+        def valuePair = sp[1].trim()
+        def code = keyPair.split("=", 2)[1]
+        def value = valuePair.split("=", 2)[1]
+        def split = code.split("\\.")
+        def parseObject = null
+        if (responseType == ResponseTypeEnum.XML) {
+            parseObject = new XmlSlurper().parseText(response)
+        } else if (responseType == ResponseTypeEnum.JSON) {
+            parseObject = new JsonSlurper().parseText(response)
+        } else if (responseType == ResponseTypeEnum.TEXT) {
+            return parseText(smsUrlConfig, paramsMap, headerMap, response)
+        } else if (responseType == ResponseTypeEnum.JSONP) {
+            return parseJsonp(smsUrlConfig, paramsMap, headerMap, response)
+        }
+        if (Objects.nonNull(parseObject)) {
+            for (int i = 0; i < split.length; i++) {
+                parseObject = parseObject.(split[i].trim())
+            }
+            parseObject = parseObject.toString()
+            return parseObject == value
+        }
+        return false
     }
 
     void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
     }
 
-
-    private String parseJsonp(String callback, String jsonp, int paramNumber, int paramIndex) {
-        def response = jsonp.substring(callback.length() + 1, jsonp.length() - 1)
-        response.split(",", paramNumber)[paramIndex]
+    /**
+     *  由子类重写
+     * @param smsUrlConfig
+     * @param paramsMap
+     * @param headerMap
+     * @param response
+     * @return
+     */
+    Boolean parseText(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+        false
     }
+
+    /**
+     *  由子类重写
+     * @param smsUrlConfig
+     * @param paramsMap
+     * @param headerMap
+     * @param response
+     * @return
+     */
+    Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+        false
+    }
+
 }

@@ -5,6 +5,7 @@ import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
 import org.apache.commons.lang3.StringUtils
+import org.apache.http.HeaderElement
 
 trait SmsScript {
 
@@ -63,15 +64,15 @@ trait SmsScript {
         }
         def responseType = smsUrlConfig.getResponseType()
         try {
-            return parseResponse(smsUrlConfig, paramsMap, headerMap, response, ResponseTypeEnum.valueOf(responseType))
+            return parseResponse(smsUrlConfig, smsUrlConfig.getSuccessCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(responseType.toUpperCase()))
         } catch (Exception e) {
             e.printStackTrace()
             return false
         }
     }
 
-    private Boolean parseResponse(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, ResponseTypeEnum responseType) {
-        def sp = smsUrlConfig.getSuccessCode().split(",", 2)
+    Boolean parseResponse(SmsUrlConfig smsUrlConfig, String resultFormatCode, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, ResponseTypeEnum responseType) {
+        def sp = resultFormatCode.split(",", 2)
         def keyPair = sp[0].trim()
         def valuePair = sp[1].trim()
         def code = keyPair.split("=", 2)[1]
@@ -98,6 +99,9 @@ trait SmsScript {
     }
 
     void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+        if (parseResponse(smsUrlConfig, smsUrlConfig.getEndCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
+            preProcess(smsUrlConfig, paramsMap, headerMap)
+        }
     }
 
     /**
@@ -123,5 +127,29 @@ trait SmsScript {
     Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
         false
     }
+
+    void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap) {
+        def headerElements = responseHeaderMap.get('Set-Cookie')
+        if (headerElements) {
+            headerElements.stream().forEach(c -> {
+                String cookie = headerMap.get('Cookie')
+                if (cookie) {
+                    List<String> list = new ArrayList<>(Arrays.asList(cookie.split(';')))
+                    boolean exist = list.stream().anyMatch(p -> {
+                        String[] itemSplit = p.split('=', 2)
+                        return Objects.equals(itemSplit[0].trim(), c[0].getName())
+                    })
+                    if (exist) {
+                        list.removeIf(p -> p.trim().startsWith(c[0].getName().trim()))
+                    }
+                    list.add(c[0].getName() + '=' + c[0].getValue())
+                    headerMap.put('Cookie', String.join(';', list))
+                } else {
+                    headerMap.put('Cookie', String.format('%s=%s', c[0].getName(), c[0].getValue()))
+                }
+            })
+        }
+    }
+
 
 }

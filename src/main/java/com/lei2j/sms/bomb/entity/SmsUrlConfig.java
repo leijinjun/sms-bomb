@@ -95,7 +95,7 @@ public class SmsUrlConfig {
     private String successCode;
 
     /**
-     * 发送验证码响应失败值
+     * 发送验证码重试
      */
     @Column(name = "end_code")
     private String endCode;

@@ -216,10 +216,29 @@ public class HttpUtils {
     }
 
     public static InputStream getStreaming(String url, Map<String, String> headers) throws IOException {
+        return getStreaming(url, headers, null);
+    }
+
+    public static InputStream getStreaming(String url, Map<String, String> headers, Map<String, Object> paramsMap) throws IOException {
+        return getStreaming(url, headers, paramsMap, null);
+    }
+
+    public static InputStream getStreaming(String url, Map<String, String> headers, Map<String, Object> paramsMap, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         Objects.requireNonNull(url, "url is null");
-        HttpGet httpGet = (HttpGet) createHttpRequest(url, HttpGet.METHOD_NAME, headers, 0, 0, 0);
+        String requestURL = url;
+        if (paramsMap != null && !paramsMap.isEmpty()) {
+            StringJoiner params = new StringJoiner("&");
+            for (Map.Entry<String, Object> entry : paramsMap.entrySet()) {
+                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8.name()));
+            }
+            requestURL = requestURL + "?" + params.toString();
+        }
+        HttpGet httpGet = (HttpGet) createHttpRequest(requestURL, HttpGet.METHOD_NAME, headers, 0, 0, 0);
         CloseableHttpResponse execute = CLIENT.execute(httpGet);
         HttpEntity entity = execute.getEntity();
+        if (responseHeaderMap != null) {
+            responseHeaderMap.putAll(Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList()))));
+        }
         assert entity.isStreaming();
         return entity.getContent();
     }

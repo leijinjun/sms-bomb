@@ -374,6 +374,10 @@ public class HttpUtils {
     }
 
     public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers) throws IOException {
+        return postFormUrlencoded(url, params, headers, null);
+    }
+
+    public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         HttpPost httpPost = (HttpPost) createHttpRequest(url, HttpPost.METHOD_NAME, headers,
                 1000 * 15, 1000 * 15, 1000 * 60);
         httpPost.addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded"));
@@ -383,6 +387,10 @@ public class HttpUtils {
             httpPost.setEntity(new UrlEncodedFormEntity(pairList, StandardCharsets.UTF_8));
         }
         CloseableHttpResponse execute = CLIENT.execute(httpPost);
+        if (responseHeaderMap != null) {
+            Map<String, List<HeaderElement[]>> headerListMap = Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+            responseHeaderMap.putAll(headerListMap);
+        }
         return BASIC_RESPONSE_HANDLER.handleResponse(execute);
     }
 

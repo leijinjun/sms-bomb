@@ -8,7 +8,8 @@ class SmsCommonScript implements SmsScript{
 
     protected String identifyImgCaptcha(InputStream imgStream) {
         def multiPart = new HttpUtils.MultiPart.Builder().setName("image").setFileName("image_" + System.currentTimeMillis()).setContentType("image/jpeg").setInputStream(imgStream).build()
-        return HttpUtils.postWithFormData(identifyUrl,multiPart)
+        def data = HttpUtils.postWithFormData(identifyUrl, multiPart)
+        return data ? data : ''
     }
 
     protected String identifyImgCaptcha(File imgFile) {

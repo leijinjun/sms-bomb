@@ -129,6 +129,10 @@ trait SmsScript {
     }
 
     void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap) {
+        setCookie(responseHeaderMap, headerMap, false)
+    }
+
+    void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap, boolean ifPresentReserve) {
         def headerElements = responseHeaderMap.get('Set-Cookie')
         if (headerElements) {
             headerElements.stream().forEach(c -> {
@@ -139,10 +143,10 @@ trait SmsScript {
                         String[] itemSplit = p.split('=', 2)
                         return Objects.equals(itemSplit[0].trim(), c[0].getName())
                     })
-                    if (exist) {
+                    if (!(exist && ifPresentReserve)) {
                         list.removeIf(p -> p.trim().startsWith(c[0].getName().trim()))
+                        list.add(c[0].getName() + '=' + c[0].getValue())
                     }
-                    list.add(c[0].getName() + '=' + c[0].getValue())
                     headerMap.put('Cookie', String.join(';', list))
                 } else {
                     headerMap.put('Cookie', String.format('%s=%s', c[0].getName(), c[0].getValue()))

@@ -100,7 +100,7 @@ trait SmsScript {
     }
 
     void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
-        if (parseResponse(smsUrlConfig, smsUrlConfig.getEndCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
+        if (smsUrlConfig.getEndCode() && parseResponse(smsUrlConfig, smsUrlConfig.getEndCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
             preProcess(smsUrlConfig, paramsMap, headerMap)
         }
     }

@@ -6,6 +6,7 @@ import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HeaderElement
+import org.apache.http.message.BasicHeaderElement
 
 trait SmsScript {
 
@@ -126,6 +127,14 @@ trait SmsScript {
      */
     Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
         false
+    }
+
+    void setCookie(String key, String value, Map<String, String> headerMap) {
+        Map<String, List<HeaderElement[]>> responseHeaderMap = new HashMap<>()
+        def list = new ArrayList<HeaderElement[]>()
+        list.add(new BasicHeaderElement[]{new BasicHeaderElement(key, value)})
+        responseHeaderMap.put('Set-Cookie', list)
+        setCookie(responseHeaderMap, headerMap)
     }
 
     void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap) {

@@ -120,7 +120,10 @@ trait SmsScript {
      * @return
      */
     Boolean parseText(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
-        false
+        if (!response) {
+            return true
+        }
+        response == smsUrlConfig.getSuccessCode()
     }
 
     /**

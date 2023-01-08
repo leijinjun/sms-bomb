@@ -262,9 +262,18 @@ public class HttpUtils {
                               int requestTimeout,
                               int connectTimeout,
                               int socketTimeout,
+                              Map<String, Object> queryParamsMap,
                               Map<String, String> headers,
                               Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
-        HttpPost httpPost = (HttpPost) createHttpRequest(url, HttpPost.METHOD_NAME, headers,
+        String requestURL = url;
+        if (queryParamsMap != null && !queryParamsMap.isEmpty()) {
+            StringJoiner params = new StringJoiner("&");
+            for (Map.Entry<String, Object> entry : queryParamsMap.entrySet()) {
+                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8.name()));
+            }
+            requestURL = requestURL + "?" + params.toString();
+        }
+        HttpPost httpPost = (HttpPost) createHttpRequest(requestURL, HttpPost.METHOD_NAME, headers,
                 requestTimeout, connectTimeout, socketTimeout);
         httpPost.addHeader("Content-Type", "application/json");
         if (json != null && !json.isEmpty()) {
@@ -279,20 +288,24 @@ public class HttpUtils {
         }
     }
 
-    public static String post(String url, String json, int socketTimeout, Map<String, String> headers) throws IOException {
-        return post(url, json, 1000 * 15, 1000 * 15, socketTimeout, headers, null);
+    public static String post(String url, String json, int socketTimeout, Map<String, Object> queryParamsMap, Map<String, String> headers) throws IOException {
+        return post(url, json, 1000 * 15, 1000 * 15, socketTimeout, queryParamsMap, headers, null);
     }
 
     public static String post(String url, String json, int socketTimeout) throws IOException {
-        return post(url, json, socketTimeout, null);
+        return post(url, json, socketTimeout, null, null);
     }
 
     public static String post(String url, String json, Map<String, String> headers) throws IOException {
-        return post(url, json, 1000 * 60, headers);
+        return post(url, json, 1000 * 60, null, headers);
     }
 
     public static String post(String url, String json, Map<String, String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
-        return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, headers, responseHeaderMap);
+        return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, null, headers, responseHeaderMap);
+    }
+
+    public static String post(String url, String json, Map<String, Object> queryParamsMap, Map<String, String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
+        return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, queryParamsMap, headers, responseHeaderMap);
     }
 
     public static String post(String url, String json) throws IOException {

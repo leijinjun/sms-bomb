@@ -44,19 +44,6 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <label for="formSuccessCode">短信发送成功处理代码</label>
-                    <input type="text" id="formSuccessCode" class="form-control"
-                           placeholder="例如：key=data.code,value=0"
-                           v-model="form.successCode">
-                </div>
-                <div class="col">
-                    <label for="formEndCode">短信重试处理代码</label>
-                    <input type="text" id="formEndCode" class="form-control" placeholder=""
-                           v-model="form.endCode">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
                     <label for="formRequestMethod">调用请求方法</label>
                     <select class="form-control" id="formRequestMethod" v-model="form.requestMethod">
                         <option value="GET">GET</option>
@@ -73,25 +60,42 @@
             </div>
             <div class="row">
                 <div class="col">
+                    <label for="formResponseType">响应数据格式</label>
+                    <select class="form-control" id="formResponseType" v-model="form.responseType">
+                        <option value="json">JSON</option>
+                        <option value="xml">XML</option>
+                        <!--                        <option value="jsonp">JSONP</option>-->
+                        <!--<option value="text">TEXT</option>-->
+                    </select>
+                </div>
+                <div class="col">
+                    <label for="formSuccessCode">短信发送成功处理代码</label>
+                    <input type="text" id="formSuccessCode" class="form-control"
+                           placeholder="例如：key=data.code,value=0"
+                           v-model="form.successCode">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
                     <label for="maxRetryTimes">最大重试次数</label>
                     <input type="number" id="maxRetryTimes" class="form-control" placeholder="" v-model="form.maxRetryTimes">
                 </div>
             </div>
             <div class="row">
                 <div class="col">
-                    <label for="formResponseType">响应数据格式</label>
-                    <select class="form-control" id="formResponseType" v-model="form.responseType">
-                        <option value="json">JSON</option>
-                        <option value="xml">XML</option>
-<!--                        <option value="jsonp">JSONP</option>-->
-                        <!--<option value="text">TEXT</option>-->
-                    </select>
+                    <label for="formEndCode">短信重试处理代码
+                        <svg data-toggle="tooltip" data-placement="right" title="可以指定多个错误进行重试" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-info-lg" viewBox="0 0 16 16">
+                            <path d="m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z"/>
+                        </svg>
+                    </label>
+
+                    <textarea class="form-control" id="formEndCode" rows="3" v-model="form.endCode" cols="50"></textarea>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <label for="formFixedHeaders">固定请求头</label>
-                    <textarea class="form-control" id="formFixedHeaders" rows="3" v-model="headerList"></textarea>
+                    <textarea class="form-control" id="formFixedHeaders" rows="5" v-model="headerList"></textarea>
                 </div>
             </div>
             <div class="binding-params-container" style="margin-bottom: 5px;margin-top: 5px;border: 0.2rem solid rgb(248, 249, 250);">
@@ -152,7 +156,7 @@
                                     <div class="row">
                                         <div class="col">
                                             <label for="formScriptContent">脚本内容</label>
-                                            <textarea class="form-control" id="formScriptContent" rows="3"
+                                            <textarea class="form-control" id="formScriptContent" rows="80"
                                                       v-model="form.scriptContent"></textarea>
                                         </div>
                                     </div>
@@ -208,11 +212,15 @@
 </div>
 </body>
 <script th:src="@{{contextPath}/js/vue.js(contextPath=${application.smsBombStaticPath})}"></script>
+<script th:src="@{{contextPath}/js/popper@1.12.3/popper.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/jquery@3.3.1/jquery-3.3.1.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/bootstrap@4.6.0/js/bootstrap.bundle.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/flat-ui.min.js(contextPath=${application.smsBombStaticPath})}"></script>
 <script th:src="@{{contextPath}/js/common/public.js?v=1.0.1(contextPath=${application.smsBombStaticPath})}"></script>
 <script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
     let contextPath = '[[${application.contextPath}]]';
     const id = '[[${param.id}]]';
     let vue = new Vue({

@@ -100,8 +100,14 @@ trait SmsScript {
     }
 
     void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
-        if (smsUrlConfig.getEndCode() && parseResponse(smsUrlConfig, smsUrlConfig.getEndCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
-            preProcess(smsUrlConfig, paramsMap, headerMap)
+        if (smsUrlConfig.getEndCode()) {
+            String[] split = smsUrlConfig.getEndCode().split('[\r\n]')
+            for (String sp : split) {
+                if (parseResponse(smsUrlConfig, sp.trim(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
+                    preProcess(smsUrlConfig, paramsMap, headerMap)
+                    break
+                }
+            }
         }
     }
 
@@ -142,7 +148,7 @@ trait SmsScript {
     }
 
     void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap, boolean ifPresentReserve) {
-        def headerElements = responseHeaderMap.get('Set-Cookie')
+        def headerElements = responseHeaderMap.get('Set-Cookie')?responseHeaderMap.get('Set-Cookie'):responseHeaderMap.get('set-cookie')
         if (headerElements) {
             headerElements.stream().forEach(c -> {
                 String cookie = headerMap.get('Cookie')

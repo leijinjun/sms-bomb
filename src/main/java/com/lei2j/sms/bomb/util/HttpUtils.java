@@ -25,7 +25,6 @@ import org.apache.http.ssl.SSLContexts;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -262,14 +261,14 @@ public class HttpUtils {
                               int requestTimeout,
                               int connectTimeout,
                               int socketTimeout,
-                              Map<String, Object> queryParamsMap,
+                              Map<String, String> queryParamsMap,
                               Map<String, String> headers,
                               Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         String requestURL = url;
         if (queryParamsMap != null && !queryParamsMap.isEmpty()) {
             StringJoiner params = new StringJoiner("&");
-            for (Map.Entry<String, Object> entry : queryParamsMap.entrySet()) {
-                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue().toString(), StandardCharsets.UTF_8.name()));
+            for (Map.Entry<String, String> entry : queryParamsMap.entrySet()) {
+                params.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
             }
             requestURL = requestURL + "?" + params.toString();
         }
@@ -288,7 +287,7 @@ public class HttpUtils {
         }
     }
 
-    public static String post(String url, String json, int socketTimeout, Map<String, Object> queryParamsMap, Map<String, String> headers) throws IOException {
+    public static String post(String url, String json, int socketTimeout, Map<String, String> queryParamsMap, Map<String, String> headers) throws IOException {
         return post(url, json, 1000 * 15, 1000 * 15, socketTimeout, queryParamsMap, headers, null);
     }
 
@@ -304,7 +303,7 @@ public class HttpUtils {
         return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, null, headers, responseHeaderMap);
     }
 
-    public static String post(String url, String json, Map<String, Object> queryParamsMap, Map<String, String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
+    public static String post(String url, String json, Map<String, String> queryParamsMap, Map<String, String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         return post(url, json, 1000 * 60, 1000 * 60, 1000 * 60, queryParamsMap, headers, responseHeaderMap);
     }
 
@@ -383,15 +382,23 @@ public class HttpUtils {
     }
 
     public static String postFormUrlencoded(String url, Map<String, Object> params) throws IOException {
-        return postFormUrlencoded(url, params, null);
+        return postFormUrlencoded(url, params, null, null);
     }
 
-    public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers) throws IOException {
-        return postFormUrlencoded(url, params, headers, null);
+    public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers,Map<String, String> queryParamsMap) throws IOException {
+        return postFormUrlencoded(url, params, queryParamsMap, headers, null);
     }
 
-    public static String postFormUrlencoded(String url, Map<String, Object> params,Map<String,String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
-        HttpPost httpPost = (HttpPost) createHttpRequest(url, HttpPost.METHOD_NAME, headers,
+    public static String postFormUrlencoded(String url, Map<String, Object> params, Map<String, String> queryParamsMap, Map<String,String> headers, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
+        String requestURL = url;
+        if (queryParamsMap != null && !queryParamsMap.isEmpty()) {
+            StringJoiner queryParams = new StringJoiner("&");
+            for (Map.Entry<String, String> entry : queryParamsMap.entrySet()) {
+                queryParams.add(entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.name()));
+            }
+            requestURL = requestURL + "?" + queryParams.toString();
+        }
+        HttpPost httpPost = (HttpPost) createHttpRequest(requestURL, HttpPost.METHOD_NAME, headers,
                 1000 * 15, 1000 * 15, 1000 * 60);
         httpPost.addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded"));
         if (params != null) {

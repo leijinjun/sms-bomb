@@ -58,10 +58,16 @@ public class SmsUrlConfig {
     private String phoneParamName;
 
     /**
-     * 绑定固定参数
+     * body绑定固定参数
      */
     @Column(name = "binding_params")
     private String bindingParams;
+
+    /**
+     * 绑定固定查询参数
+     */
+    @Column(name = "binding_query_params")
+    private String bindingQueryParams;
 
     /**
      * 创建时间
@@ -163,7 +169,7 @@ public class SmsUrlConfig {
     }
 
     public SmsUrlConfig(Long id, String websiteName, String icon, String website, String smsUrl, String phoneParamName,
-                        String bindingParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessName, String successCode,
+                        String bindingParams,String bindingQueryParams, LocalDateTime createAt, LocalDateTime updateAt, Boolean normal, String businessName, String successCode,
                         String endCode, String scriptName, String scriptContent, String scriptPath, String requestMethod, String contentType, String headers,
                         Boolean openScript, String responseType, LocalDateTime lastUsedTime, Integer maxRetryTimes) {
         this.id = id;
@@ -173,6 +179,7 @@ public class SmsUrlConfig {
         this.smsUrl = smsUrl;
         this.phoneParamName = phoneParamName;
         this.bindingParams = bindingParams;
+        this.bindingQueryParams = bindingQueryParams;
         this.createAt = createAt;
         this.updateAt = updateAt;
         this.normal = normal;
@@ -208,6 +215,14 @@ public class SmsUrlConfig {
     public Map<String, String> getBindingParamsMap() {
         if (StringUtils.isNotBlank(bindingParams)) {
             return JSON.parseObject(bindingParams, new TypeReference<LinkedHashMap<String, String>>() {
+            });
+        }
+        return Collections.emptyMap();
+    }
+
+    public Map<String, String> getBindingQueryParamsMap() {
+        if (StringUtils.isNotBlank(bindingQueryParams)) {
+            return JSON.parseObject(bindingQueryParams, new TypeReference<LinkedHashMap<String, String>>() {
             });
         }
         return Collections.emptyMap();
@@ -397,6 +412,10 @@ public class SmsUrlConfig {
         this.maxRetryTimes = maxRetryTimes;
     }
 
+    public String getBindingQueryParams() {
+        return bindingQueryParams;
+    }
+
     @Override
     public String toString() {
         return "SmsUrlConfig{" +
@@ -407,6 +426,7 @@ public class SmsUrlConfig {
                 ", smsUrl='" + smsUrl + '\'' +
                 ", phoneParamName='" + phoneParamName + '\'' +
                 ", bindingParams='" + bindingParams + '\'' +
+                ", bindingQueryParams='" + bindingQueryParams + '\'' +
                 ", createAt=" + createAt +
                 ", updateAt=" + updateAt +
                 ", normal=" + normal +
@@ -424,5 +444,10 @@ public class SmsUrlConfig {
                 ", lastUsedTime=" + lastUsedTime +
                 ", maxRetryTimes=" + maxRetryTimes +
                 '}';
+    }
+
+    public void setBindingQueryParams(String bindingQueryParams) {
+
+        this.bindingQueryParams = bindingQueryParams;
     }
 }

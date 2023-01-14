@@ -2,6 +2,7 @@ package com.lei2j.sms.bomb.script
 
 import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
+import com.lei2j.sms.bomb.service.impl.ScriptContext
 import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
 import org.apache.commons.lang3.StringUtils
@@ -17,7 +18,10 @@ trait SmsScript {
         TEXT;
     }
 
-    void preProcess(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) {
+    void preProcess(ScriptContext scriptContext) {
+        SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
+        Map<String, Object> paramsMap = scriptContext.getParamsMap()
+        Map<String, String> headerMap = scriptContext.getHeaderMap()
         List<String> headerList = smsUrlConfig.getHeaderList()
         if (!headerMap.containsKey("Accept")) {
             headerMap.put("Accept", "*/*")
@@ -50,12 +54,11 @@ trait SmsScript {
         }
     }
 
-    @Deprecated
-    Boolean postProcess(SmsUrlConfig smsUrlConfig, String response) {
-        return this.postProcess(smsUrlConfig, Collections.emptyMap(), Collections.emptyMap(), response)
-    }
-
-    Boolean postProcess(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+    Boolean postProcess(ScriptContext scriptContext) {
+        SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
+        Map<String, Object> paramsMap = scriptContext.getParamsMap()
+        Map<String, String> headerMap = scriptContext.getHeaderMap()
+        String response = scriptContext.getResponse()
         if (response == null || response.isEmpty()) {
             return Boolean.TRUE
         }
@@ -99,12 +102,20 @@ trait SmsScript {
         return false
     }
 
-    void retry(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+    Boolean parseResponse(ScriptContext scriptContext, String resultFormatCode, String response, ResponseTypeEnum responseType) {
+        parseResponse(scriptContext.getSmsUrlConfig(), resultFormatCode, scriptContext.getParamsMap(), scriptContext.getHeaderMap(), response, responseType)
+    }
+
+    void retry(ScriptContext scriptContext) {
+        SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
+        Map<String, Object> paramsMap = scriptContext.getParamsMap()
+        Map<String, String> headerMap = scriptContext.getHeaderMap()
+        String response = scriptContext.getResponse()
         if (smsUrlConfig.getEndCode()) {
             String[] split = smsUrlConfig.getEndCode().split('[\r\n]')
             for (String sp : split) {
                 if (parseResponse(smsUrlConfig, sp.trim(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
-                    preProcess(smsUrlConfig, paramsMap, headerMap)
+                    preProcess(scriptContext)
                     break
                 }
             }
@@ -137,6 +148,14 @@ trait SmsScript {
     Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
         false
     }
+
+    Boolean parseJsonp(ScriptContext scriptContext, String response, String callbackMethod, String resultFormatCode){
+        def regex = ~/${callbackMethod}\((.*)\)/
+        def matcher = regex.matcher(response)
+        assert matcher.find()
+        parseResponse(scriptContext, resultFormatCode, matcher.group(1), ResponseTypeEnum.JSON)
+    }
+
 
     void setCookie(String key, String value, Map<String, String> headerMap) {
         Map<String, List<HeaderElement[]>> responseHeaderMap = new HashMap<>()

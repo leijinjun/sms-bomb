@@ -83,16 +83,16 @@ public class GroovySmsScriptExecutorService {
         return instance.invokeMethod(method, args);
     }
 
-    public void preInvoke(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws Exception {
-        invoke0(parse(smsUrlConfig, groovyScriptBasePath), "preProcess", smsUrlConfig, paramsMap, headerMap);
+    public void preInvoke(ScriptContext scriptContext) throws Exception {
+        invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "preProcess", scriptContext);
     }
 
-    public Object postInvoke(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) throws Exception {
-        return invoke0(parse(smsUrlConfig, groovyScriptBasePath), "postProcess", smsUrlConfig, paramsMap, headerMap, response);
+    public Object postInvoke(ScriptContext scriptContext) throws Exception {
+        return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "postProcess", scriptContext);
     }
 
-    public void retry(SmsUrlConfig entity, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) throws Exception {
-        invoke0(parse(entity, groovyScriptBasePath), "retry", entity, paramsMap, headerMap, response);
+    public void retry(ScriptContext scriptContext) throws Exception {
+        invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "retry", scriptContext);
     }
 
     private static class ScriptCache {

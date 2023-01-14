@@ -114,7 +114,11 @@ public class SmsSendService extends CommonServiceImpl {
         return !queue.contains(smsSendDTO);
     }
 
-    private String request(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap) throws IOException {
+    private String request(ScriptContext scriptContext) throws IOException {
+        SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig();
+        Map<String, Object> paramsMap = scriptContext.getParamsMap();
+        Map<String, String> headerMap = scriptContext.getHeaderMap();
+        Map<String, String> queryMap = scriptContext.getQueryMap();
         String requestMethod = smsUrlConfig.getRequestMethod().toUpperCase();
         String smsUrl = smsUrlConfig.getSmsUrl();
         if (HttpMethod.GET.matches(requestMethod)) {
@@ -122,9 +126,9 @@ public class SmsSendService extends CommonServiceImpl {
         } else if (HttpMethod.POST.matches(requestMethod)) {
             String contentType = smsUrlConfig.getContentType();
             if ("application/json".equalsIgnoreCase(contentType)) {
-                return HttpUtils.post(smsUrl, JSON.toJSONString(paramsMap), headerMap);
+                return HttpUtils.post(smsUrl, JSON.toJSONString(paramsMap), queryMap, headerMap, null);
             } else if ("application/x-www-form-urlencoded".equalsIgnoreCase(contentType)) {
-                return HttpUtils.postFormUrlencoded(smsUrl, paramsMap, headerMap);
+                return HttpUtils.postFormUrlencoded(smsUrl, paramsMap, headerMap, queryMap);
             } else {
                 throw new UnsupportedOperationException(contentType);
             }
@@ -165,28 +169,31 @@ public class SmsSendService extends CommonServiceImpl {
 
         @Override
         public void run() {
-            Map<String, String> headerMap = new LinkedHashMap<>(6);
-            Map<String,Object> paramsMap = new LinkedHashMap<>(6);
+            ScriptContext scriptContext = new ScriptContext();
+            scriptContext.getHeaderMap().putAll(FIXED_HEADER);
+            scriptContext.getParamsMap().put(entity.getPhoneParamName(), smsSendDTO.getPhone());
+            scriptContext.getQueryMap().putAll(entity.getBindingQueryParamsMap());
+            scriptContext.setSmsUrlConfig(entity);
             int duration = -1;
             Boolean success = Boolean.FALSE;
             String response = null;
             try {
-                headerMap.putAll(FIXED_HEADER);
-                paramsMap.put(entity.getPhoneParamName(), smsSendDTO.getPhone());
-                groovyScriptExecutorService.preInvoke(entity, paramsMap, headerMap);
-                logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), paramsMap, headerMap);
+
+                groovyScriptExecutorService.preInvoke(scriptContext);
+                logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), scriptContext.getParamsMap(), scriptContext.getQueryMap());
                 for (int i = 0; i < entity.getMaxRetryTimes(); i++) {
                     long startTime = System.currentTimeMillis();
-                    response = request(entity, paramsMap, headerMap);
+                    response = request(scriptContext);
                     long endTime = System.currentTimeMillis();
                     duration = (int) (endTime - startTime);
                     logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
                     //解析响应
-                    success = (Boolean) groovyScriptExecutorService.postInvoke(entity, paramsMap, headerMap, response);
+                    scriptContext.setResponse(response);
+                    success = (Boolean) groovyScriptExecutorService.postInvoke(scriptContext);
                     if (Boolean.TRUE.equals(success)) {
                         break;
                     } else {
-                        groovyScriptExecutorService.retry(entity, paramsMap, headerMap, response);
+                        groovyScriptExecutorService.retry(scriptContext);
                         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(new Random().nextInt(3) + 1));
                     }
                 }
@@ -197,7 +204,7 @@ public class SmsSendService extends CommonServiceImpl {
                 e.printStackTrace();
                 response = e.getMessage();
             } finally {
-                saveAsyncSendLog(smsSendDTO, entity, paramsMap, response, duration, success);
+                saveAsyncSendLog(smsSendDTO, entity, scriptContext.getParamsMap(), response, duration, success);
             }
         }
     }

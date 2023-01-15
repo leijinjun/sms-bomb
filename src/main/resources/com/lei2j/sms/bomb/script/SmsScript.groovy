@@ -64,7 +64,7 @@ trait SmsScript {
         }
         def successCode = smsUrlConfig.getSuccessCode()
         if (successCode == null || successCode.isEmpty()) {
-            return Boolean.TRUE
+            return Boolean.FALSE
         }
         def responseType = smsUrlConfig.getResponseType()
         try {
@@ -76,28 +76,30 @@ trait SmsScript {
     }
 
     Boolean parseResponse(SmsUrlConfig smsUrlConfig, String resultFormatCode, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, ResponseTypeEnum responseType) {
-        def sp = resultFormatCode.split(",", 2)
-        def keyPair = sp[0].trim()
-        def valuePair = sp[1].trim()
-        def code = keyPair.split("=", 2)[1]
-        def value = valuePair.split("=", 2)[1]
-        def split = code.split("\\.")
         def parseObject = null
         if (responseType == ResponseTypeEnum.XML) {
             parseObject = new XmlSlurper().parseText(response)
         } else if (responseType == ResponseTypeEnum.JSON) {
             parseObject = new JsonSlurper().parseText(response)
         } else if (responseType == ResponseTypeEnum.TEXT) {
-            return parseText(smsUrlConfig, paramsMap, headerMap, response)
+            return parseText(smsUrlConfig, paramsMap, headerMap, response, resultFormatCode)
         } else if (responseType == ResponseTypeEnum.JSONP) {
-            return parseJsonp(smsUrlConfig, paramsMap, headerMap, response)
+            return parseJsonp(smsUrlConfig, paramsMap, headerMap, response, resultFormatCode)
         }
-        if (Objects.nonNull(parseObject)) {
-            for (int i = 0; i < split.length; i++) {
-                parseObject = parseObject.(split[i].trim())
+        if (parseObject) {
+            def sp = resultFormatCode.split(",", 2)
+            def keyPair = sp[0].trim()
+            def valuePair = sp[1].trim()
+            def code = keyPair.split("=", 2)[1]
+            def value = valuePair.split("=", 2)[1]
+            def split = code.split("\\.")
+            if (Objects.nonNull(parseObject)) {
+                for (int i = 0; i < split.length; i++) {
+                    parseObject = parseObject.(split[i].trim())
+                }
+                parseObject = parseObject.toString()
+                return parseObject == value
             }
-            parseObject = parseObject.toString()
-            return parseObject == value
         }
         return false
     }
@@ -130,11 +132,11 @@ trait SmsScript {
      * @param response
      * @return
      */
-    Boolean parseText(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+    Boolean parseText(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, String resultFormatCode) {
         if (!response) {
             return true
         }
-        response == smsUrlConfig.getSuccessCode()
+        response == resultFormatCode
     }
 
     /**
@@ -143,9 +145,10 @@ trait SmsScript {
      * @param paramsMap
      * @param headerMap
      * @param response
+     * @param resultFormatCode
      * @return
      */
-    Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response) {
+    Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, String resultFormatCode) {
         false
     }
 

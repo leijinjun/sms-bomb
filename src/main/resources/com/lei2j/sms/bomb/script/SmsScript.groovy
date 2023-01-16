@@ -108,7 +108,7 @@ trait SmsScript {
         parseResponse(scriptContext.getSmsUrlConfig(), resultFormatCode, scriptContext.getParamsMap(), scriptContext.getHeaderMap(), response, responseType)
     }
 
-    void retry(ScriptContext scriptContext) {
+    Boolean retry(ScriptContext scriptContext) {
         SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
         Map<String, Object> paramsMap = scriptContext.getParamsMap()
         Map<String, String> headerMap = scriptContext.getHeaderMap()
@@ -117,11 +117,11 @@ trait SmsScript {
             String[] split = smsUrlConfig.getEndCode().split('[\r\n]')
             for (String sp : split) {
                 if (parseResponse(smsUrlConfig, sp.trim(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
-                    preProcess(scriptContext)
-                    break
+                    return true
                 }
             }
         }
+        false
     }
 
     /**

@@ -178,23 +178,29 @@ public class SmsSendService extends CommonServiceImpl {
             Boolean success = Boolean.FALSE;
             String response = null;
             try {
-
-                groovyScriptExecutorService.preInvoke(scriptContext);
                 logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), scriptContext.getParamsMap(), scriptContext.getQueryMap());
                 for (int i = 0; i < entity.getMaxRetryTimes(); i++) {
+                    groovyScriptExecutorService.preInvoke(scriptContext);
                     long startTime = System.currentTimeMillis();
-                    response = request(scriptContext);
                     long endTime = System.currentTimeMillis();
                     duration = (int) (endTime - startTime);
                     logger.info("[sms.send]response:{},requestTime:{}ms", response, duration);
-                    //解析响应
-                    scriptContext.setResponse(response);
-                    success = (Boolean) groovyScriptExecutorService.postInvoke(scriptContext);
-                    if (Boolean.TRUE.equals(success)) {
-                        break;
-                    } else {
-                        groovyScriptExecutorService.retry(scriptContext);
+                    try {
+                        response = request(scriptContext);
+                        //解析响应
+                        scriptContext.setResponse(response);
+                        success = (Boolean) groovyScriptExecutorService.postInvoke(scriptContext);
+                        if (Boolean.TRUE.equals(success)) {
+                            break;
+                        }
+                    } catch (HttpUtils.SimpleHttpResponseException e) {
+                        e.printStackTrace();
+                        scriptContext.setResponse(e.getErrorEntity());
+                    }
+                    if (groovyScriptExecutorService.retry(scriptContext) == Boolean.TRUE) {
                         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(new Random().nextInt(3) + 1));
+                    } else {
+                        break;
                     }
                 }
             } catch (HttpResponseException e) {

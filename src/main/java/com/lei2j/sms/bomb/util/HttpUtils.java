@@ -1,9 +1,8 @@
 package com.lei2j.sms.bomb.util;
 
 import com.alibaba.fastjson.JSONObject;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
-import org.apache.http.HttpEntity;
+import org.apache.http.*;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
@@ -22,6 +21,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,7 +40,48 @@ public class HttpUtils {
 
     private static final CloseableHttpClient CLIENT;
 
-    private static final BasicResponseHandler BASIC_RESPONSE_HANDLER = new BasicResponseHandler();
+    public static class SimpleHttpResponseException extends HttpResponseException  {
+
+        private String errorEntity;
+
+        public SimpleHttpResponseException(int statusCode, String reasonPhrase) {
+            super(statusCode, reasonPhrase);
+        }
+
+        public SimpleHttpResponseException(int statusCode, String reasonPhrase, String errorEntity) {
+            super(statusCode, reasonPhrase);
+            this.errorEntity = errorEntity;
+        }
+
+        public String getErrorEntity() {
+            return errorEntity;
+        }
+
+        public void setErrorEntity(String errorEntity) {
+            this.errorEntity = errorEntity;
+        }
+    }
+
+    private static final BasicResponseHandler BASIC_RESPONSE_HANDLER = new BasicResponseHandler(){
+
+        @Override
+        public String handleEntity(HttpEntity entity) throws IOException {
+            return super.handleEntity(entity);
+        }
+
+        @Override
+        public String handleResponse(HttpResponse response) throws IOException {
+            StatusLine statusLine = response.getStatusLine();
+            HttpEntity entity = response.getEntity();
+            if (statusLine.getStatusCode() >= 300) {
+                SimpleHttpResponseException exception = new SimpleHttpResponseException(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+                exception.setErrorEntity(EntityUtils.toString(entity));
+                throw exception;
+            } else {
+                return entity == null ? null : this.handleEntity(entity);
+            }
+        }
+    };
 
     static {
         try {

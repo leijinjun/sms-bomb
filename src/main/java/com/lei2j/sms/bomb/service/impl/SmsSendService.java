@@ -179,7 +179,11 @@ public class SmsSendService extends CommonServiceImpl {
             String response = null;
             try {
                 logger.info("[smb.send]url:{},params:{},headers:{}", entity.getSmsUrl(), scriptContext.getParamsMap(), scriptContext.getQueryMap());
-                for (int i = 0; i < entity.getMaxRetryTimes(); i++) {
+                Integer maxRetryTimes = entity.getMaxRetryTimes();
+                if (maxRetryTimes == null || maxRetryTimes <= 0) {
+                    maxRetryTimes = 1;
+                }
+                for (int i = 0; i < maxRetryTimes; i++) {
                     groovyScriptExecutorService.preInvoke(scriptContext);
                     long startTime = System.currentTimeMillis();
                     long endTime = System.currentTimeMillis();

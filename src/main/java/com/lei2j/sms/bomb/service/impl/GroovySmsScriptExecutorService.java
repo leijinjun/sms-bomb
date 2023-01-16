@@ -91,8 +91,8 @@ public class GroovySmsScriptExecutorService {
         return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "postProcess", scriptContext);
     }
 
-    public void retry(ScriptContext scriptContext) throws Exception {
-        invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "retry", scriptContext);
+    public Object retry(ScriptContext scriptContext) throws Exception {
+        return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "retry", scriptContext);
     }
 
     private static class ScriptCache {

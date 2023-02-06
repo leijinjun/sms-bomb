@@ -5,6 +5,7 @@ import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import com.lei2j.sms.bomb.service.impl.ScriptContext
 import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
+import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.StringUtils
 import org.apache.http.HeaderElement
 import org.apache.http.message.BasicHeaderElement
@@ -52,12 +53,13 @@ trait SmsScript {
                 paramsMap.put(entry.getKey(), entry.getValue())
             }
         }
+        if (ResponseTypeEnum.valueOf(scriptContext.getSmsUrlConfig().responseType.toUpperCase()) == ResponseTypeEnum.JSONP) {
+            paramsMap.put(getJsonpRequestKey(), 'jQuery' + RandomStringUtils.randomNumeric(19) + "_" + System.currentTimeMillis())
+        }
     }
 
     Boolean postProcess(ScriptContext scriptContext) {
         SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
-        Map<String, Object> paramsMap = scriptContext.getParamsMap()
-        Map<String, String> headerMap = scriptContext.getHeaderMap()
         String response = scriptContext.getResponse()
         if (response == null || response.isEmpty()) {
             return Boolean.TRUE
@@ -68,23 +70,23 @@ trait SmsScript {
         }
         def responseType = smsUrlConfig.getResponseType()
         try {
-            return parseResponse(smsUrlConfig, smsUrlConfig.getSuccessCode(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(responseType.toUpperCase()))
+            return parseResponse(scriptContext, smsUrlConfig.getSuccessCode(), response, ResponseTypeEnum.valueOf(responseType.toUpperCase()))
         } catch (Exception e) {
             e.printStackTrace()
             return false
         }
     }
 
-    Boolean parseResponse(SmsUrlConfig smsUrlConfig, String resultFormatCode, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, ResponseTypeEnum responseType) {
+    Boolean parseResponse(ScriptContext scriptContext, String resultFormatCode, String response, ResponseTypeEnum responseType) {
         def parseObject = null
         if (responseType == ResponseTypeEnum.XML) {
             parseObject = new XmlSlurper().parseText(response)
         } else if (responseType == ResponseTypeEnum.JSON) {
             parseObject = new JsonSlurper().parseText(response)
         } else if (responseType == ResponseTypeEnum.TEXT) {
-            return parseText(smsUrlConfig, paramsMap, headerMap, response, resultFormatCode)
+            return parseText(scriptContext, response, resultFormatCode)
         } else if (responseType == ResponseTypeEnum.JSONP) {
-            return parseJsonp(smsUrlConfig, paramsMap, headerMap, response, resultFormatCode)
+            return parseJsonp(scriptContext, response, resultFormatCode)
         }
         if (parseObject) {
             def sp = resultFormatCode.split(",", 2)
@@ -104,19 +106,13 @@ trait SmsScript {
         return false
     }
 
-    Boolean parseResponse(ScriptContext scriptContext, String resultFormatCode, String response, ResponseTypeEnum responseType) {
-        parseResponse(scriptContext.getSmsUrlConfig(), resultFormatCode, scriptContext.getParamsMap(), scriptContext.getHeaderMap(), response, responseType)
-    }
-
     Boolean retry(ScriptContext scriptContext) {
         SmsUrlConfig smsUrlConfig = scriptContext.getSmsUrlConfig()
-        Map<String, Object> paramsMap = scriptContext.getParamsMap()
-        Map<String, String> headerMap = scriptContext.getHeaderMap()
         String response = scriptContext.getResponse()
         if (smsUrlConfig.getEndCode()) {
             String[] split = smsUrlConfig.getEndCode().split('[\r\n]')
             for (String sp : split) {
-                if (parseResponse(smsUrlConfig, sp.trim(), paramsMap, headerMap, response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
+                if (parseResponse(scriptContext, sp.trim(), response, ResponseTypeEnum.valueOf(smsUrlConfig.getResponseType().toUpperCase()))) {
                     return true
                 }
             }
@@ -126,33 +122,18 @@ trait SmsScript {
 
     /**
      *  由子类重写
-     * @param smsUrlConfig
-     * @param paramsMap
-     * @param headerMap
-     * @param response
+     * @param scriptContext
      * @return
      */
-    Boolean parseText(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, String resultFormatCode) {
+    Boolean parseText(ScriptContext scriptContext, String response, String resultFormatCode) {
         if (!response) {
             return true
         }
         response == resultFormatCode
     }
 
-    /**
-     *  由子类重写
-     * @param smsUrlConfig
-     * @param paramsMap
-     * @param headerMap
-     * @param response
-     * @param resultFormatCode
-     * @return
-     */
-    Boolean parseJsonp(SmsUrlConfig smsUrlConfig, Map<String, Object> paramsMap, Map<String, String> headerMap, String response, String resultFormatCode) {
-        false
-    }
-
-    Boolean parseJsonp(ScriptContext scriptContext, String response, String callbackMethod, String resultFormatCode){
+    Boolean parseJsonp(ScriptContext scriptContext, String response, String resultFormatCode){
+        def callbackMethod = scriptContext.getParamsMap().get(getJsonpRequestKey()).toString()
         def regex = ~/${callbackMethod}\((.*)\)/
         def matcher = regex.matcher(response)
         assert matcher.find()
@@ -195,5 +176,8 @@ trait SmsScript {
         }
     }
 
+    String getJsonpRequestKey(){
+        'callback'
+    }
 
 }

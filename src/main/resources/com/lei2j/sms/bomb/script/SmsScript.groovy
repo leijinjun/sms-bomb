@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.http.HeaderElement
 import org.apache.http.message.BasicHeaderElement
 
+import java.util.function.BiFunction
+
 trait SmsScript {
 
     enum ResponseTypeEnum {
@@ -35,8 +37,9 @@ trait SmsScript {
             String value = split[1]
             if (StringUtils.isNotBlank(value)) {
                 if ("cookie".equalsIgnoreCase(name)) {
-                    String o1 = headerMap.computeIfPresent("Cookie",(key,val)->{(val + (val.endsWith(";") ? "" : ";") + value)})
-                    String o2 = headerMap.computeIfPresent("cookie", (key, val) -> (val + (val.endsWith(";") ? "" : ";") + value))
+                    BiFunction<String, String, String> f = (key, val) -> { (val + (val.endsWith(";") ? "" : ";") + value) }
+                    String o1 = headerMap.computeIfPresent("Cookie", f)
+                    String o2 = headerMap.computeIfPresent("cookie", f)
                     if (o1 == null && o2 == null) {
                         headerMap.put("Cookie", value)
                     }

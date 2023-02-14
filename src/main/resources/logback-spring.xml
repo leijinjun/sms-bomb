@@ -5,7 +5,7 @@
     <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
     <!-- 通用日志配置 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/sms-bomb.log}"/>
+    <property name="logFile" value="${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}}/${LOG_FILE}"/>
 <!--    <property name="LOG_FILE" value="/opt/smsBomb/${applicantName}.log"/>-->
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
     <include resource="file-appender.xml" />

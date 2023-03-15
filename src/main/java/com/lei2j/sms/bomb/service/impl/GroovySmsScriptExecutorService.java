@@ -1,9 +1,11 @@
 package com.lei2j.sms.bomb.service.impl;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
+import com.lei2j.sms.bomb.util.SpringApplicationUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
@@ -34,6 +36,9 @@ public class GroovySmsScriptExecutorService {
     private static final Map<String, ScriptCache> SCRIPT_CACHE = new ConcurrentHashMap<>(64);
 
     private final GroovyObject defaultObject;
+
+    @Autowired
+    private SpringApplicationUtils springApplicationUtils;
 
     public GroovySmsScriptExecutorService() throws Exception {
         ClassPathResource classPathResource = new ClassPathResource(SC);
@@ -84,15 +89,33 @@ public class GroovySmsScriptExecutorService {
     }
 
     public void preInvoke(ScriptContext scriptContext) throws Exception {
-        invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "preProcess", scriptContext);
+        scriptContext.setSpringApplicationUtils(springApplicationUtils);
+        try {
+            ScriptThreadContext.set(scriptContext);
+            invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "preProcess", scriptContext);
+        }finally {
+            ScriptThreadContext.remove();
+        }
     }
 
     public Object postInvoke(ScriptContext scriptContext) throws Exception {
-        return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "postProcess", scriptContext);
+        scriptContext.setSpringApplicationUtils(springApplicationUtils);
+        try {
+            ScriptThreadContext.set(scriptContext);
+            return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "postProcess", scriptContext);
+        }finally {
+            ScriptThreadContext.remove();
+        }
     }
 
     public Object retry(ScriptContext scriptContext) throws Exception {
-        return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "retry", scriptContext);
+        scriptContext.setSpringApplicationUtils(springApplicationUtils);
+        try {
+            ScriptThreadContext.set(scriptContext);
+            return invoke0(parse(scriptContext.getSmsUrlConfig(), groovyScriptBasePath), "retry", scriptContext);
+        }finally {
+            ScriptThreadContext.remove();
+        }
     }
 
     private static class ScriptCache {

@@ -1,6 +1,7 @@
 package com.lei2j.sms.bomb.service.impl;
 
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
+import com.lei2j.sms.bomb.util.SpringApplicationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,8 @@ public class ScriptContext {
     private final Map<String, String> queryMap = new HashMap<>();
 
     private String response;
+
+    private SpringApplicationUtils springApplicationUtils;
 
     public SmsUrlConfig getSmsUrlConfig() {
         return smsUrlConfig;
@@ -47,5 +50,13 @@ public class ScriptContext {
 
     public void setResponse(String response) {
         this.response = response;
+    }
+
+    public SpringApplicationUtils getSpringApplicationUtils() {
+        return springApplicationUtils;
+    }
+
+    public void setSpringApplicationUtils(SpringApplicationUtils springApplicationUtils) {
+        this.springApplicationUtils = springApplicationUtils;
     }
 }

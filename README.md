@@ -5,7 +5,7 @@
 添加。
 一般地，新添加网站短信资源需要编写扩展脚本，需要具有Groovy知识。
 ## 快速开始
-1.手动安装
+1.下载源码安装
 ```
 git clone https://github.com/leijinjun/sms-bomb.git
 cd sms-bomb

@@ -1,0 +1,13 @@
+services:
+  sms-server:
+    image: sms-bomb:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - D:\opt\smsBomb:/opt/smsBomb
+    depends_on:
+      - ocr-server
+  ocr-server:
+    image: ocr-server:v1
+    ports:
+      - "9898:9898"

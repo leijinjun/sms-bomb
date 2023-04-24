@@ -184,7 +184,12 @@ public class SmsSendService extends CommonServiceImpl {
                     maxRetryTimes = 1;
                 }
                 for (int i = 0; i < maxRetryTimes; i++) {
-                    groovyScriptExecutorService.preInvoke(scriptContext);
+                    try {
+                        groovyScriptExecutorService.preInvoke(scriptContext);
+                    } catch (RetryInvokeException e) {
+                        logger.error("[sms.send]前置处理异常：", e);
+                        continue;
+                    }
                     long startTime = System.currentTimeMillis();
                     long endTime = System.currentTimeMillis();
                     duration = (int) (endTime - startTime);

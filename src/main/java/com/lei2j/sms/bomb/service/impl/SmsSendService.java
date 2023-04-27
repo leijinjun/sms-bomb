@@ -217,7 +217,7 @@ public class SmsSendService extends CommonServiceImpl {
                 e.printStackTrace();
             } catch (Exception e) {
                 e.printStackTrace();
-                response = e.getMessage();
+                response = StringUtils.isNotBlank(response) ? response + "\n" + e.getMessage() : e.getMessage();
             } finally {
                 saveAsyncSendLog(smsSendDTO, entity, scriptContext.getParamsMap(), response, duration, success);
             }

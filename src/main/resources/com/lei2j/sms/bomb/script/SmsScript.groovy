@@ -57,7 +57,7 @@ trait SmsScript {
             }
         }
         if (ResponseTypeEnum.valueOf(scriptContext.getSmsUrlConfig().responseType.toUpperCase()) == ResponseTypeEnum.JSONP) {
-            paramsMap.put(getJsonpRequestKey(), 'jQuery' + RandomStringUtils.randomNumeric(19) + "_" + System.currentTimeMillis())
+            paramsMap.put(getJsonpRequestKey(), getJsonpResponseValue())
         }
     }
 
@@ -183,4 +183,7 @@ trait SmsScript {
         'callback'
     }
 
+    String getJsonpResponseValue(){
+        'jQuery' + RandomStringUtils.randomNumeric(19) + "_" + System.currentTimeMillis()
+    }
 }

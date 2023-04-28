@@ -29,6 +29,7 @@
     <common.codec.version>1.15</common.codec.version>
     <fastjson.version>1.2.75</fastjson.version>
     <thymeleaf.extras.version>3.0.4.RELEASE</thymeleaf.extras.version>
+    <jsoup.version>1.15.4</jsoup.version>
   </properties>
 
   <dependencies>
@@ -126,6 +127,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jsoup</groupId>
+      <artifactId>jsoup</artifactId>
+      <version>${jsoup.version}</version>
     </dependency>
     <dependency>
       <groupId>com.lei2j</groupId>

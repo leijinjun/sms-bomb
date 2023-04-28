@@ -44,7 +44,7 @@ trait SmsScript {
                         headerMap.put("Cookie", value)
                     }
                 } else {
-                    headerMap.put(name, value)
+                    headerMap.put(name, value.trim())
                 }
             }
         })

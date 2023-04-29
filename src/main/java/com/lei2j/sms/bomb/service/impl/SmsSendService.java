@@ -186,7 +186,7 @@ public class SmsSendService extends CommonServiceImpl {
                 for (int i = 0; i < maxRetryTimes; i++) {
                     try {
                         groovyScriptExecutorService.preInvoke(scriptContext);
-                    } catch (RetryInvokeException e) {
+                    } catch (Exception e) {
                         logger.error("[sms.send]前置处理异常：", e);
                         continue;
                     }

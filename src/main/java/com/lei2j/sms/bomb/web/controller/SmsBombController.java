@@ -58,13 +58,13 @@ public class SmsBombController {
         LocalDateTime before = now.with(ChronoField.HOUR_OF_DAY, 0).with(ChronoField.MINUTE_OF_HOUR, 0).with(ChronoField.SECOND_OF_MINUTE, 0);
         LocalDateTime after = now.with(ChronoField.HOUR_OF_DAY, 23).with(ChronoField.MINUTE_OF_HOUR, 59).with(ChronoField.SECOND_OF_MINUTE, 59);
         long count = smsSendLogRepository.countByPhoneEqualsAndCreateAtBetween(phone, before, after);
-        if (count >= maxSendCount) {
+        /*if (count >= maxSendCount) {
             return ResponseEntity.unprocessableEntity().body("手机号受限");
         }
         long ipCount = smsSendLogRepository.countByIpEqualsAndCreateAtBetween(clientIp, before, after);
         if (ipCount >= maxSendCount) {
             return ResponseEntity.unprocessableEntity().body("IP受限");
-        }
+        }*/
         if (sendItems == null) {
             sendItems = maxSendCount;
         } else {

@@ -62,6 +62,12 @@ public class SmsUrlConfigController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/updateAllStatus")
+    public ResponseEntity<Void> update(@RequestParam(value = "status") Boolean normal) {
+        smsUrlConfigRepository.updateAllStatus(normal);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/save")
     public ResponseEntity<Void> update(SmsUrlConfig smsUrlConfig) {
         return Optional.of(smsUrlConfig)

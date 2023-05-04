@@ -55,7 +55,9 @@
                 </form>
             </div>
             <div style="margin-top: 40px;">
-                <p><a th:href="edit" class="btn btn-primary">新增</a></p>
+                <p><a th:href="edit" class="btn btn-primary">新增</a>
+                <a href="javascript:void(0);" @click="allUpdateStatus(1)" class="btn btn-primary">全部启用</a>
+                <a href="javascript:void(0);" @click="allUpdateStatus(0)" class="btn btn-primary">全部禁用</a></p>
                 <table class="table table-bordered table-hover table-responsive-lg">
                     <thead>
                     <tr>
@@ -219,6 +221,15 @@
             },
             reset:function(){
                 this.params={}
+            },
+            allUpdateStatus(status){
+                let $this=this
+                $http.postWithForm(contextPath+'/url/config/updateAllStatus',{'status':status})
+                    .then(function (res) {
+                        gft.alert.success('操作成功',2000)
+                        $this.getPage(1, $this.pager.ps, $this.params);
+                    }).catch(function (reason) {
+                })
             }
         },
         updated:function () {

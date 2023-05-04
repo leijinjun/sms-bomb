@@ -20,6 +20,11 @@ public class ScriptContext {
 
     private final Map<String, String> queryMap = new HashMap<>();
 
+    /**
+     *
+     */
+    private final Map<String, Object> contextDataMap = new HashMap<>();
+
     private String response;
 
     private SpringApplicationUtils springApplicationUtils;
@@ -42,6 +47,10 @@ public class ScriptContext {
 
     public Map<String, String> getQueryMap() {
         return queryMap;
+    }
+
+    public Map<String, Object> getContextDataMap() {
+        return contextDataMap;
     }
 
     public String getResponse() {

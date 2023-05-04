@@ -10,6 +10,7 @@
 <div class="container-md"  id="app">
     <div style="padding: 1.5rem;border: .2rem solid #f8f9fa;margin: 1rem -15px 0;">
         <button type="button" class="btn btn-primary" @click="backToList">返回</button>
+        <button type="button" class="btn btn-primary" @click="update()">保存</button>
         <form role="form">
             <div class="row">
                 <div class="col">
@@ -195,7 +196,7 @@
             </div>
             <div class="row" style="margin-top: 20px;">
                 <div class="col">
-                    <button type="button" class="btn btn-primary" @click="update()">修改</button>
+                    <button type="button" class="btn btn-primary" @click="update()">保存</button>
                     <a  class="btn btn-default" th:href="list">取消</a>
                 </div>
             </div>

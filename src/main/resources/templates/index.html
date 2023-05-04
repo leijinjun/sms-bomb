@@ -81,7 +81,7 @@
                     gft.alert.success('操作成功', 2000);
                     $this.requestId = res;
                     setTimeout(function () {
-                        $this.getResult(res);
+                        $this.getResult(res,$this.form.sendItems);
                     }, 1500);
                 }).catch(function (reason) {
                     gft.alert.error(reason.status + ":" + reason.error, 2000);
@@ -100,11 +100,11 @@
                 if (!this.requestId) {
                     return;
                 }
-                this.getResult(this.requestId);
+                this.getResult(this.requestId,this.form.sendItems);
             },
-            getResult(requestId){
+            getResult(requestId,sendSize){
                 let $this = this;
-                $http.get(contextPath + '/smsBomb/getResult', {'requestId': requestId})
+                $http.get(contextPath + '/smsBomb/getResult', {'requestId': requestId,'sendSize':sendSize})
                     .then(function (res) {
                         let code = res[0];
                         let successNum = res[1];
@@ -114,7 +114,7 @@
                             return;
                         }
                         setTimeout(function () {
-                            $this.getResult(requestId);
+                            $this.getResult(requestId,sendSize);
                         }, 1500);
                     }).catch(function (reason) {
                 })

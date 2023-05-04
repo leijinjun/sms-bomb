@@ -12,6 +12,8 @@ import com.lei2j.sms.bomb.entity.SmsSendLog;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.HttpResponseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -51,7 +53,7 @@ public class SmsSendService extends CommonServiceImpl {
 
     private final SmsSendLogRepository smsSendLogRepository;
 
-    private final SmsUrlConfigRepository smsUrlConfigRepository;
+    private final SmsUrlConfigService smsUrlConfigService;
 
     private final IdGenerator idGenerator;
 
@@ -67,11 +69,11 @@ public class SmsSendService extends CommonServiceImpl {
     @Value("${smb.bomb.send.retry.size:3}")
     private Integer maxRetryTimes;
 
-    public SmsSendService(SmsUrlConfigRepository smsUrlConfigRepository,
+    public SmsSendService(SmsUrlConfigService smsUrlConfigService,
                           GroovySmsScriptExecutorService groovyScriptExecutorService,
                           SmsSendLogRepository smsSendLogRepository,
                           IdGenerator idGenerator) {
-        this.smsUrlConfigRepository = smsUrlConfigRepository;
+        this.smsUrlConfigService = smsUrlConfigService;
         this.groovyScriptExecutorService = groovyScriptExecutorService;
         this.smsSendLogRepository = smsSendLogRepository;
         this.idGenerator = idGenerator;
@@ -82,11 +84,7 @@ public class SmsSendService extends CommonServiceImpl {
             return;
         }
         Integer windowSize = smsSendDTO.getSendItems();
-        Integer count = smsUrlConfigRepository.countByNormalEquals(Boolean.TRUE);
-        if (windowSize > count) {
-            windowSize = count;
-        }
-        List<SmsUrlConfig> list = smsUrlConfigRepository.findTopListByNormalEquals(Boolean.TRUE, windowSize);
+        List<SmsUrlConfig> list = smsUrlConfigService.get(windowSize);
         if (!CollectionUtils.isEmpty(list)) {
             for (SmsUrlConfig entity : list) {
                 if (entity.getMaxRetryTimes() == null) {
@@ -107,11 +105,13 @@ public class SmsSendService extends CommonServiceImpl {
         queue.removeIf(p -> Objects.equals(id, ((SmsTask) p).smsSendDTO.getPhone()) || Objects.equals(id, ((SmsTask) p).smsSendDTO.getRequestId()));
     }
 
-    public Boolean isFinished(String requestId) {
-        final BlockingQueue<Runnable> queue = executorService.getQueue();
-        final SmsSendDTO smsSendDTO = new SmsSendDTO();
-        smsSendDTO.setRequestId(requestId);
-        return !queue.contains(smsSendDTO);
+    public Boolean isFinished(String requestId, int windowSize) {
+        SmsSendLog smsSendLog = new SmsSendLog();
+        smsSendLog.setRequestId(requestId);
+        final ExampleMatcher exampleMatcher = ExampleMatcher.matching().withMatcher("requestId",
+                ExampleMatcher.GenericPropertyMatcher.of(ExampleMatcher.StringMatcher.DEFAULT, true));
+        final long count = smsSendLogRepository.count(Example.of(smsSendLog, exampleMatcher));
+        return windowSize <= count;
     }
 
     private String request(ScriptContext scriptContext) throws IOException {
@@ -148,7 +148,11 @@ public class SmsSendService extends CommonServiceImpl {
             record.setIp(smsSendDTO.getClientIp());
             record.setSmsUrl(smsUrlConfig.getSmsUrl());
             record.setParams(JSONObject.toJSONString(params));
-            record.setResponse(response);
+            if (StringUtils.isEmpty(response)) {
+                record.setResponse(response);
+            } else {
+                record.setResponse(response.substring(0, Math.min(1024, response.length())));
+            }
             record.setRequestDuration(requestDuration);
             record.setResponseStatus(success ? SmsSendLog.SUCCESS_STATUS : SmsSendLog.FAILURE_STATUS);
             record.setCreateAt(LocalDateTime.now());

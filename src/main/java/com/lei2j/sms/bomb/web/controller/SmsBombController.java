@@ -5,6 +5,7 @@ import com.lei2j.sms.bomb.entity.SmsSendLog;
 import com.lei2j.sms.bomb.repository.SmsSendLogRepository;
 import com.lei2j.sms.bomb.repository.SmsSendLogRepository.GroupStatus;
 import com.lei2j.sms.bomb.service.impl.SmsSendService;
+import com.lei2j.sms.bomb.service.impl.SmsUrlConfigServiceImpl;
 import com.lei2j.sms.bomb.web.interceptor.ClientIpInterceptor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,9 @@ public class SmsBombController {
     private Integer sendSize;
 
     @Autowired
+    private SmsUrlConfigServiceImpl smsUrlConfigService;
+
+    @Autowired
     public SmsBombController(SmsSendService smsSendService, SmsSendLogRepository smsSendLogRepository) {
         this.smsSendService = smsSendService;
         this.smsSendLogRepository = smsSendLogRepository;
@@ -54,11 +58,11 @@ public class SmsBombController {
             return ResponseEntity.badRequest().build();
         }
         String clientIp = String.valueOf(request.getAttribute(ClientIpInterceptor.CLIENT_IP));
-        LocalDateTime now = LocalDateTime.now(ZoneId.of("CTT", ZoneId.SHORT_IDS));
+        /*LocalDateTime now = LocalDateTime.now(ZoneId.of("CTT", ZoneId.SHORT_IDS));
         LocalDateTime before = now.with(ChronoField.HOUR_OF_DAY, 0).with(ChronoField.MINUTE_OF_HOUR, 0).with(ChronoField.SECOND_OF_MINUTE, 0);
         LocalDateTime after = now.with(ChronoField.HOUR_OF_DAY, 23).with(ChronoField.MINUTE_OF_HOUR, 59).with(ChronoField.SECOND_OF_MINUTE, 59);
         long count = smsSendLogRepository.countByPhoneEqualsAndCreateAtBetween(phone, before, after);
-        /*if (count >= maxSendCount) {
+        if (count >= maxSendCount) {
             return ResponseEntity.unprocessableEntity().body("手机号受限");
         }
         long ipCount = smsSendLogRepository.countByIpEqualsAndCreateAtBetween(clientIp, before, after);
@@ -87,12 +91,13 @@ public class SmsBombController {
     }
 
     @GetMapping("/smsBomb/getResult")
-    public ResponseEntity<Object[]> getResult(String requestId) throws InterruptedException {
+    public ResponseEntity<Object[]> getResult(String requestId,
+                                              int sendSize) throws InterruptedException {
         if (StringUtils.isBlank(requestId)) {
             return ResponseEntity.badRequest().build();
         }
         Object[] result = new Object[]{0, 0};
-        Boolean finished = smsSendService.isFinished(requestId);
+        Boolean finished = smsSendService.isFinished(requestId, sendSize);
         result[0] = Objects.equals(true, finished) ? 1 : 0;
         TimeUnit.SECONDS.sleep(1);
         List<GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
@@ -100,5 +105,10 @@ public class SmsBombController {
         result[1] =
                 mapList.stream().filter(p -> Objects.equals(p.getResponseStatus(), SmsSendLog.SUCCESS_STATUS)).mapToInt(GroupStatus::getTotalCount).sum();
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/smsBomb/getSize")
+    public ResponseEntity<Object> getSize(int size) throws InterruptedException {
+        return ResponseEntity.ok(smsUrlConfigService.get(size));
     }
 }

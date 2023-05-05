@@ -42,6 +42,9 @@ public class SmsUrlConfigServiceImpl implements SmsUrlConfigService {
             set = new HashSet<>();
         }
         size = Math.min(max, size);
+        if (size <= 0) {
+            return set;
+        }
         final int nextInt = random.nextInt(max);
         set.add(nextInt);
         if (set.size() >= size) {

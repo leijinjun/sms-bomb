@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.LockSupport;
 
 /**
@@ -48,6 +45,10 @@ public class SmsSendService extends CommonServiceImpl {
 
     private final ThreadPoolExecutor logExecutorService =
             new ThreadPoolExecutor(2, 5, 15, TimeUnit.MINUTES, new ArrayBlockingQueue<>(2000), new ThreadPoolExecutor.DiscardOldestPolicy());
+
+    private final ScheduledExecutorService checkSendSmsExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    private final List<Future<?>> futureList = new ArrayList<>();
 
     private final GroovySmsScriptExecutorService groovyScriptExecutorService;
 
@@ -77,6 +78,7 @@ public class SmsSendService extends CommonServiceImpl {
         this.groovyScriptExecutorService = groovyScriptExecutorService;
         this.smsSendLogRepository = smsSendLogRepository;
         this.idGenerator = idGenerator;
+        loopCheckSmsSendResult();
     }
 
     public void send(SmsSendDTO smsSendDTO) {
@@ -92,7 +94,8 @@ public class SmsSendService extends CommonServiceImpl {
                 }else{
                     entity.setMaxRetryTimes(Math.min(maxRetryTimes, entity.getMaxRetryTimes()));
                 }
-                executorService.submit(new SmsTask(entity, smsSendDTO));
+                final Future<?> future = executorService.submit(new SmsTask(entity, smsSendDTO));
+                futureList.add(future);
             }
         }
     }
@@ -102,7 +105,29 @@ public class SmsSendService extends CommonServiceImpl {
             return;
         }
         final BlockingQueue<Runnable> queue = executorService.getQueue();
-        queue.removeIf(p -> Objects.equals(id, ((SmsTask) p).smsSendDTO.getPhone()) || Objects.equals(id, ((SmsTask) p).smsSendDTO.getRequestId()));
+        queue.removeIf(p -> {
+            if (p instanceof SmsTask) {
+                return Objects.equals(id, ((SmsTask) p).smsSendDTO.getRequestId());
+            }
+            return false;
+        });
+    }
+
+    private void loopCheckSmsSendResult(){
+        checkSendSmsExecutor.scheduleAtFixedRate(() -> {
+            if (!CollectionUtils.isEmpty(futureList)) {
+                final Iterator<Future<?>> iterator = futureList.iterator();
+                while (iterator.hasNext()) {
+                    final Future<?> next = iterator.next();
+                    try {
+                        next.get(5, TimeUnit.SECONDS);
+                        iterator.remove();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, 10, 5, TimeUnit.SECONDS);
     }
 
     public Boolean isFinished(String requestId, int windowSize) {

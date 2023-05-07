@@ -99,8 +99,14 @@
                     <textarea class="form-control" id="formFixedHeaders" rows="5" v-model="headerList"></textarea>
                 </div>
             </div>
-            <div class="binding-params-container" style="margin-bottom: 5px;margin-top: 5px;border: 0.2rem solid rgb(248, 249, 250);">
-                <p>绑定Query参数
+            <div class="binding-params-container" v-show="form.requestMethod && form.requestMethod!='GET'"
+                 style="margin-bottom: 5px;margin-top:5px;border: 0.2rem solid rgb(248, 249, 250);">
+                <p>绑定查询参数
+                    <svg data-toggle="tooltip" data-placement="right" title="POST请求时绑定到URL的查询参数"
+                         xmlns="http://www.w3.org/2000/svg"
+                         width="16" height="16" fill="currentColor" class="bi bi-info-lg" viewBox="0 0 16 16">
+                        <path d="m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z"/>
+                    </svg>
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#edit-modal1"
                             style="margin-left: 5px;">新增
                     </button>
@@ -127,7 +133,12 @@
                 </div>
             </div>
             <div class="binding-params-container" style="margin-bottom: 5px;margin-top: 5px;border: 0.2rem solid rgb(248, 249, 250);">
-                <p>绑定Body参数
+                <p>绑定请求参数
+                    <svg data-toggle="tooltip" data-placement="right" title="GET请求时绑定到URL的查询参数，POST请求绑定到请求体中"
+                         xmlns="http://www.w3.org/2000/svg"
+                         width="16" height="16" fill="currentColor" class="bi bi-info-lg" viewBox="0 0 16 16">
+                        <path d="m9.708 6.075-3.024.379-.108.502.595.108c.387.093.464.232.38.619l-.975 4.577c-.255 1.183.14 1.74 1.067 1.74.72 0 1.554-.332 1.933-.789l.116-.549c-.263.232-.65.325-.905.325-.363 0-.494-.255-.402-.704l1.323-6.208Zm.091-2.755a1.32 1.32 0 1 1-2.64 0 1.32 1.32 0 0 1 2.64 0Z"/>
+                    </svg>
                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#edit-modal"
                             style="margin-left: 5px;">新增
                     </button>

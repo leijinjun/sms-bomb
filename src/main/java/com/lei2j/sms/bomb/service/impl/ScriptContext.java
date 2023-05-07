@@ -5,6 +5,7 @@ import com.lei2j.sms.bomb.util.SpringApplicationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author leijinjun
@@ -59,6 +60,14 @@ public class ScriptContext {
 
     public void setResponse(String response) {
         this.response = response;
+    }
+
+    public final String getPhoneParamName(){
+        return Optional.ofNullable(smsUrlConfig).map(SmsUrlConfig::getPhoneParamName).orElse(null);
+    }
+
+    public final String getPhoneValue(){
+        return paramsMap.get(getPhoneParamName()).toString();
     }
 
     public SpringApplicationUtils getSpringApplicationUtils() {

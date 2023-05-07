@@ -83,6 +83,8 @@
                     setTimeout(function () {
                         $this.getResult(res,$this.form.sendItems);
                     }, 1500);
+                },function (error) {
+                    gft.alert.error(error, 2000);
                 }).catch(function (reason) {
                     gft.alert.error(reason.status + ":" + reason.error, 2000);
                 })

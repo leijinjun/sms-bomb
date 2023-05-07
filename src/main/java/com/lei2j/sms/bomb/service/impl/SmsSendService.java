@@ -81,9 +81,9 @@ public class SmsSendService extends CommonServiceImpl {
         loopCheckSmsSendResult();
     }
 
-    public void send(SmsSendDTO smsSendDTO) {
+    public boolean send(SmsSendDTO smsSendDTO) {
         if (StringUtils.isBlank(smsSendDTO.getPhone())) {
-            return;
+            return false;
         }
         Integer windowSize = smsSendDTO.getSendItems();
         List<SmsUrlConfig> list = smsUrlConfigService.get(windowSize);
@@ -91,12 +91,15 @@ public class SmsSendService extends CommonServiceImpl {
             for (SmsUrlConfig entity : list) {
                 if (entity.getMaxRetryTimes() == null) {
                     entity.setMaxRetryTimes(maxRetryTimes);
-                }else{
+                } else {
                     entity.setMaxRetryTimes(Math.min(maxRetryTimes, entity.getMaxRetryTimes()));
                 }
                 final Future<?> future = executorService.submit(new SmsTask(entity, smsSendDTO));
                 futureList.add(future);
             }
+            return true;
+        } else {
+            return false;
         }
     }
 

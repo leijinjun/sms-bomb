@@ -80,8 +80,8 @@ public class SmsBombController {
         smsSendDTO.setClientIp(clientIp);
         smsSendDTO.setRequestId(requestId);
         smsSendDTO.setSendItems(sendItems);
-        smsSendService.send(smsSendDTO);
-        return ResponseEntity.ok(requestId);
+        final boolean send = smsSendService.send(smsSendDTO);
+        return send ? ResponseEntity.ok(requestId) : ResponseEntity.unprocessableEntity().body("没有可用的短信API资源");
     }
 
     @RequestMapping("/smsBomb/shutdown/{id}")

@@ -62,7 +62,7 @@ let $http = {
                     } else if (xhr.status >= 500) {
                         reject(xhr.status+":服务器错误");
                     } else {
-                        reject(error);
+                        reject(xhr.status+":"+xhr.responseText);
                     }
                 }
             })
@@ -75,7 +75,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    reject(error);
+                    reject(xhr.status+":"+xhr.responseText);
                 }
             })
         });
@@ -93,7 +93,7 @@ let $http = {
                     resolve(result);
                 },
                 error:function(xhr,status,error){
-                    reject(error);
+                    reject(xhr.status+":"+xhr.responseText);
                 }
             })
         })
@@ -110,8 +110,8 @@ let $http = {
                 success:function(result){
                     resolve(result);
                 },
-                error:function(xhr){
-                    reject(xhr.responseJSON);
+                error:function(xhr,status,error){
+                    reject(xhr.status+":"+xhr.responseText);
                 }
             })
         })

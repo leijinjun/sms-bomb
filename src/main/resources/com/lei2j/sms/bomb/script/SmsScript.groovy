@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import com.lei2j.sms.bomb.service.impl.ScriptContext
 import groovy.json.JsonSlurper
+import groovy.text.GStringTemplateEngine
 import groovy.xml.XmlSlurper
 import org.apache.commons.lang3.RandomStringUtils
 import org.apache.commons.lang3.StringUtils
@@ -13,6 +14,8 @@ import org.apache.http.message.BasicHeaderElement
 import java.util.function.BiFunction
 
 trait SmsScript {
+
+    GStringTemplateEngine stringTemplateEngine = new GStringTemplateEngine()
 
     enum ResponseTypeEnum {
         JSON,
@@ -59,6 +62,27 @@ trait SmsScript {
         if (ResponseTypeEnum.valueOf(scriptContext.getSmsUrlConfig().responseType.toUpperCase()) == ResponseTypeEnum.JSONP) {
             paramsMap.put(getJsonpRequestKey(), getJsonpResponseValue())
         }
+        parseExpressionScriptContext(scriptContext)
+    }
+
+    /**
+     * 解析表达式
+     * @param scriptContext
+     */
+    void parseExpressionScriptContext(ScriptContext scriptContext){
+        scriptContext.getQueryMap().forEach((k, v) -> {
+            def template = stringTemplateEngine.createTemplate(v.toString())
+            scriptContext.getQueryMap().put(k, template.make().toString())
+        })
+        scriptContext.getHeaderMap().forEach((k, v) -> {
+            def template = stringTemplateEngine.createTemplate(v.toString())
+            scriptContext.getHeaderMap().put(k, template.make().toString())
+        })
+        scriptContext.getParamsMap().forEach((k, v) -> {
+            def template = stringTemplateEngine.createTemplate(v.toString())
+            scriptContext.getParamsMap().put(k, template.make().toString())
+        })
+        scriptContext.getSmsUrlConfig().setSmsUrl(stringTemplateEngine.createTemplate(scriptContext.getSmsUrlConfig().getSmsUrl()).make().toString())
     }
 
     Boolean postProcess(ScriptContext scriptContext) {
@@ -177,6 +201,24 @@ trait SmsScript {
                 }
             })
         }
+    }
+
+    String getCookieValue(Map<String, String> headerMap, String key) {
+        def cookie = headerMap.get('Cookie')
+        if (!cookie) {
+            cookie = headerMap.get('cookie')
+        }
+        if (cookie) {
+            String[] split = cookie.split(";")
+            def list = split.toList()
+            for (String str : list) {
+                def split1 = str.split("=")
+                if (split1[0].trim() == key) {
+                    return split1.length > 1 ? split1[1].trim() : null
+                }
+            }
+        }
+        return null
     }
 
     String getJsonpRequestKey(){

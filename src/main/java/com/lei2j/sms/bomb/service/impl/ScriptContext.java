@@ -30,6 +30,11 @@ public class ScriptContext {
 
     private SpringApplicationUtils springApplicationUtils;
 
+    /**
+     * 上一次脚本上下文内容
+     */
+    private ScriptContext preScriptContext;
+
     public SmsUrlConfig getSmsUrlConfig() {
         return smsUrlConfig;
     }
@@ -62,10 +67,16 @@ public class ScriptContext {
         this.response = response;
     }
 
+    /**
+     * @return 手机号参数名称
+     */
     public final String getPhoneParamName(){
         return Optional.ofNullable(smsUrlConfig).map(SmsUrlConfig::getPhoneParamName).orElse(null);
     }
 
+    /**
+     * @return 手机号
+     */
     public final String getPhoneValue(){
         return paramsMap.get(getPhoneParamName()).toString();
     }
@@ -76,5 +87,13 @@ public class ScriptContext {
 
     public void setSpringApplicationUtils(SpringApplicationUtils springApplicationUtils) {
         this.springApplicationUtils = springApplicationUtils;
+    }
+
+    public ScriptContext getPreScriptContext() {
+        return preScriptContext;
+    }
+
+    public void setPreScriptContext(ScriptContext preScriptContext) {
+        this.preScriptContext = preScriptContext;
     }
 }

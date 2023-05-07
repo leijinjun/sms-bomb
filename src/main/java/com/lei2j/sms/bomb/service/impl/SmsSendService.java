@@ -196,13 +196,19 @@ public class SmsSendService extends CommonServiceImpl {
             this.smsSendDTO = smsSendDTO;
         }
 
-        @Override
-        public void run() {
+        private ScriptContext newScriptContext(ScriptContext preContext){
             ScriptContext scriptContext = new ScriptContext();
             scriptContext.getHeaderMap().putAll(FIXED_HEADER);
             scriptContext.getParamsMap().put(entity.getPhoneParamName(), smsSendDTO.getPhone());
             scriptContext.getQueryMap().putAll(entity.getBindingQueryParamsMap());
             scriptContext.setSmsUrlConfig(entity);
+            scriptContext.setPreScriptContext(preContext);
+            return scriptContext;
+        }
+
+        @Override
+        public void run() {
+            ScriptContext scriptContext = newScriptContext(null);
             int duration = -1;
             Boolean success = Boolean.FALSE;
             String response = null;
@@ -237,6 +243,7 @@ public class SmsSendService extends CommonServiceImpl {
                     }
                     if (groovyScriptExecutorService.retry(scriptContext) == Boolean.TRUE) {
                         LockSupport.parkNanos(TimeUnit.SECONDS.toNanos(new Random().nextInt(3) + 1));
+                        scriptContext = newScriptContext(scriptContext);
                     } else {
                         break;
                     }

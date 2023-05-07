@@ -455,6 +455,10 @@ public class HttpUtils {
         return BASIC_RESPONSE_HANDLER.handleResponse(execute);
     }
 
+    public static Map<String, List<HeaderElement[]>> newHeaderMap() {
+        return new HashMap<>();
+    }
+
     private static HttpRequestBase createHttpRequest(String url,String method,Map<String,String> headerMap,
                                               int connectionRequestTimeout, int connectionTimeout, int socketTimeout) {
         HttpRequestBase requestBase;

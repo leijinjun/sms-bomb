@@ -73,7 +73,7 @@ public class HttpUtils {
         public String handleResponse(HttpResponse response) throws IOException {
             StatusLine statusLine = response.getStatusLine();
             HttpEntity entity = response.getEntity();
-            if (statusLine.getStatusCode() >= 300) {
+            if (statusLine.getStatusCode() >= 400) {
                 SimpleHttpResponseException exception = new SimpleHttpResponseException(statusLine.getStatusCode(), statusLine.getReasonPhrase());
                 exception.setErrorEntity(EntityUtils.toString(entity));
                 throw exception;

@@ -11,6 +11,10 @@ import org.apache.commons.lang3.StringUtils
 import org.apache.http.HeaderElement
 import org.apache.http.message.BasicHeaderElement
 
+import javax.crypto.Cipher
+import java.nio.charset.StandardCharsets
+import java.security.KeyFactory
+import java.security.spec.X509EncodedKeySpec
 import java.util.function.BiFunction
 
 trait SmsScript {
@@ -219,6 +223,21 @@ trait SmsScript {
             }
         }
         return null
+    }
+
+    /**
+     *  使用RSA加密
+     * @param data
+     * @param publicKeyBase64
+     * @return
+     */
+    String encryptByRsa(String data, String publicKeyBase64) {
+        def keySpec = new X509EncodedKeySpec(publicKeyBase64.decodeBase64())
+        def keyFactory = KeyFactory.getInstance("RSA")
+        def publicKey = keyFactory.generatePublic(keySpec)
+        Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm())
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey)
+        return cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)).encodeBase64().toString()
     }
 
     String getJsonpRequestKey(){

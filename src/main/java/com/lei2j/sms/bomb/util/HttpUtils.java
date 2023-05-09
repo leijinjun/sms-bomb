@@ -17,16 +17,22 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -88,7 +94,10 @@ public class HttpUtils {
             SSLContextBuilder sslContextBuilder = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy());
             SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContextBuilder.build(),
                     new String[]{"TLSv1.2", "TLSv1.1"}, null, NoopHostnameVerifier.INSTANCE);
-            CLIENT = HttpClients.custom().setSSLSocketFactory(socketFactory).build();
+            CLIENT = HttpClients.custom()
+                    .setMaxConnTotal(100)
+                    .setMaxConnPerRoute(15)
+                    .setSSLSocketFactory(socketFactory).build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -263,6 +272,14 @@ public class HttpUtils {
         return getStreaming(url, headers, paramsMap, null);
     }
 
+    /**
+     * @param url
+     * @param headers
+     * @param paramsMap
+     * @param responseHeaderMap
+     * @return InputStream 该流不需要主要关闭
+     * @throws IOException
+     */
     public static InputStream getStreaming(String url, Map<String, String> headers, Map<String, Object> paramsMap, Map<String, List<HeaderElement[]>> responseHeaderMap) throws IOException {
         Objects.requireNonNull(url, "url is null");
         String requestURL = url;
@@ -274,19 +291,28 @@ public class HttpUtils {
             requestURL = requestURL + "?" + params.toString();
         }
         HttpGet httpGet = (HttpGet) createHttpRequest(requestURL, HttpGet.METHOD_NAME, headers, 0, 0, 0);
-        CloseableHttpResponse execute = CLIENT.execute(httpGet);
-        HttpEntity entity = execute.getEntity();
-        if (responseHeaderMap != null) {
-            responseHeaderMap.putAll(Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList()))));
+        try (CloseableHttpResponse execute = CLIENT.execute(httpGet);
+             final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024 * 512)){
+            HttpEntity entity = execute.getEntity();
+            if (responseHeaderMap != null) {
+                responseHeaderMap.putAll(Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList()))));
+            }
+            assert entity.isStreaming();
+            final InputStream inputStream = entity.getContent();
+            byte[] buffer = new byte[4096];
+            int len;
+            while ((len = inputStream.read(buffer)) > -1 ) {
+                outputStream.write(buffer, 0, len);
+            }
+            return new ByteArrayInputStream(outputStream.toByteArray());
         }
-        assert entity.isStreaming();
-        return entity.getContent();
     }
 
     public static Map<String, List<HeaderElement[]>> getHeaders(String url) throws IOException {
         HttpGet httpGet = new HttpGet(url);
-        CloseableHttpResponse response = CLIENT.execute(httpGet);
-        return Arrays.stream(response.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+        try (CloseableHttpResponse response = CLIENT.execute(httpGet)){
+            return Arrays.stream(response.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+        }
     }
 
     public static List<HeaderElement[]> getHeader(String url, String name) throws IOException {
@@ -404,8 +430,9 @@ public class HttpUtils {
                 requestTimeout, connectTimeout, socketTimeout);
         httpPost.addHeader("Content-Type", "application/octet-stream");
         httpPost.setEntity(new InputStreamEntity(in));
-        CloseableHttpResponse execute = CLIENT.execute(httpPost);
-        return BASIC_RESPONSE_HANDLER.handleResponse(execute);
+        try (CloseableHttpResponse execute = CLIENT.execute(httpPost)){
+            return BASIC_RESPONSE_HANDLER.handleResponse(execute);
+        }
     }
 
     public static String postForUpload(String url, InputStream in) throws IOException {
@@ -418,8 +445,9 @@ public class HttpUtils {
                 1000 * 15, 1000 * 15, 1000 * 60);
         httpPost.addHeader(new BasicHeader("Content-Type", "text/xml"));
         httpPost.setEntity(new StringEntity(xml, StandardCharsets.UTF_8));
-        CloseableHttpResponse execute = CLIENT.execute(httpPost);
-        return BASIC_RESPONSE_HANDLER.handleResponse(execute);
+        try (CloseableHttpResponse execute = CLIENT.execute(httpPost)){
+            return BASIC_RESPONSE_HANDLER.handleResponse(execute);
+        }
     }
 
     public static String postFormUrlencoded(String url, Map<String, Object> params) throws IOException {
@@ -447,12 +475,13 @@ public class HttpUtils {
                     params.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue().toString())).collect(Collectors.toList());
             httpPost.setEntity(new UrlEncodedFormEntity(pairList, StandardCharsets.UTF_8));
         }
-        CloseableHttpResponse execute = CLIENT.execute(httpPost);
-        if (responseHeaderMap != null) {
-            Map<String, List<HeaderElement[]>> headerListMap = Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
-            responseHeaderMap.putAll(headerListMap);
+        try (CloseableHttpResponse execute = CLIENT.execute(httpPost)){
+            if (responseHeaderMap != null) {
+                Map<String, List<HeaderElement[]>> headerListMap = Arrays.stream(execute.getAllHeaders()).collect(Collectors.groupingBy(Header::getName, Collectors.mapping(Header::getElements, Collectors.toList())));
+                responseHeaderMap.putAll(headerListMap);
+            }
+            return BASIC_RESPONSE_HANDLER.handleResponse(execute);
         }
-        return BASIC_RESPONSE_HANDLER.handleResponse(execute);
     }
 
     public static Map<String, List<HeaderElement[]>> newHeaderMap() {

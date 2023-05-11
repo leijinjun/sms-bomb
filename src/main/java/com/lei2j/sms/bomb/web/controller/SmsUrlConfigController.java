@@ -101,10 +101,16 @@ public class SmsUrlConfigController {
                                 if (elements.isEmpty()) {
                                     elements = document.getElementsByAttributeValueContaining("href", "logo");
                                 }
-                                final String href = elements.get(0).attr("href");
-                                final int index = href.lastIndexOf("/");
-                                String iconUrl = t.getWebsite() + "" + href.substring(index);
-                                t.setIcon(iconUrl);
+                                if (!elements.isEmpty()) {
+                                    final String href = elements.get(0).attr("href");
+                                    if (href.startsWith("http")) {
+                                        t.setIcon(href);
+                                    } else {
+                                        final int index = href.indexOf("/");
+                                        String iconUrl = t.getWebsite() + "" + href.substring(index);
+                                        t.setIcon(iconUrl);
+                                    }
+                                }
                             } catch (Exception ignore) {
 
                             }

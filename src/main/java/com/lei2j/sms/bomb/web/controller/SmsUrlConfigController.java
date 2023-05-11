@@ -87,7 +87,7 @@ public class SmsUrlConfigController {
                             t.setId(((Long) idGenerator.next()));
                             t.setNormal(true);
                         }
-                        if (StringUtils.isNotBlank(t.getWebsite())) {
+                        if (StringUtils.isNotBlank(t.getWebsite())&&StringUtils.isBlank(t.getWebsiteName())) {
                             try {
                                 final Connection connect = Jsoup.connect(t.getWebsite());
                                 final Document document = connect.get();

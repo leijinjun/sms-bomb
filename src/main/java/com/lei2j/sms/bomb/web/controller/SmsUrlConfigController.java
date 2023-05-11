@@ -4,7 +4,13 @@ import com.lei2j.idgen.core.IdGenerator;
 import com.lei2j.sms.bomb.base.entity.Pager;
 import com.lei2j.sms.bomb.entity.SmsUrlConfig;
 import com.lei2j.sms.bomb.repository.SmsUrlConfigRepository;
+import com.lei2j.sms.bomb.util.HttpUtils;
 import com.lei2j.sms.bomb.util.IgnoreEmptyStringValueTransformer;
+import org.apache.commons.lang3.StringUtils;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -73,13 +79,35 @@ public class SmsUrlConfigController {
         return Optional.of(smsUrlConfig)
                 .map(c -> {
                     Long id = c.getId();
-                    boolean isCreated = Objects.isNull(id);
+                    final boolean isCreated = Objects.isNull(id);
                     Optional<SmsUrlConfig> configOptional = isCreated ? Optional.of(c) : smsUrlConfigRepository.findById(id);
                     return configOptional.map(t -> {
                         BeanUtils.copyProperties(c, t, "createAt", "updateAt", "lastUsedTime","normal");
                         if (isCreated) {
                             t.setId(((Long) idGenerator.next()));
                             t.setNormal(true);
+                        }
+                        if (StringUtils.isNotBlank(t.getWebsite())) {
+                            try {
+                                final Connection connect = Jsoup.connect(t.getWebsite());
+                                final Document document = connect.get();
+                                final Elements titleEle = document.getElementsByTag("title");
+                                if (!titleEle.isEmpty()) {
+                                    String text = titleEle.get(0).text();
+                                    text = text.substring(0, Math.min(text.length(), 255));
+                                    t.setWebsiteName(text);
+                                }
+                                Elements elements = document.getElementsByAttributeValueContaining("href", "favicon");
+                                if (elements.isEmpty()) {
+                                    elements = document.getElementsByAttributeValueContaining("href", "logo");
+                                }
+                                final String href = elements.get(0).attr("href");
+                                final int index = href.lastIndexOf("/");
+                                String iconUrl = t.getWebsite() + "" + href.substring(index);
+                                t.setIcon(iconUrl);
+                            } catch (Exception ignore) {
+
+                            }
                         }
                         if (Objects.isNull(t.getCreateAt())) {
                             t.setCreateAt(LocalDateTime.now());

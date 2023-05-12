@@ -31,11 +31,10 @@ import java.util.concurrent.locks.LockSupport;
  **/
 @Service
 public class SmsSendService extends CommonServiceImpl {
-    private static final Map<String, String> FIXED_HEADER = new LinkedHashMap<>();
+    public static final Map<String, String> FIXED_HEADER = new LinkedHashMap<>();
 
     static{
         FIXED_HEADER.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, " + "like Gecko) Chrome/87.0.4280.67 Safari/537.36 Edg/87.0.664.47");
-        FIXED_HEADER.put("Connection", "close");
     }
 
     private final int coreSize = Runtime.getRuntime().availableProcessors() + 1;
@@ -124,9 +123,11 @@ public class SmsSendService extends CommonServiceImpl {
                     final Future<?> next = iterator.next();
                     try {
                         next.get(5, TimeUnit.SECONDS);
-                        iterator.remove();
                     } catch (Exception e) {
+                        next.cancel(true);
                         e.printStackTrace();
+                    }finally {
+                        iterator.remove();
                     }
                 }
             }

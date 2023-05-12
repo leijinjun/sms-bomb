@@ -12,7 +12,9 @@ import org.apache.http.HeaderElement
 import org.apache.http.message.BasicHeaderElement
 
 import javax.crypto.Cipher
+import javax.crypto.spec.SecretKeySpec
 import java.nio.charset.StandardCharsets
+import java.security.Key
 import java.security.KeyFactory
 import java.security.spec.X509EncodedKeySpec
 import java.util.function.BiFunction
@@ -33,11 +35,6 @@ trait SmsScript {
         Map<String, Object> paramsMap = scriptContext.getParamsMap()
         Map<String, String> headerMap = scriptContext.getHeaderMap()
         List<String> headerList = smsUrlConfig.getHeaderList()
-        if (!headerMap.containsKey("Accept")) {
-            headerMap.put("Accept", "*/*")
-        }else if (!headerMap.containsKey("accept")) {
-            headerMap.put("Accept", "*/*")
-        }
         headerList.forEach((headerPair) -> {
             String[] split = headerPair.split(":", 2)
             String name = split[0]
@@ -55,6 +52,12 @@ trait SmsScript {
                 }
             }
         })
+        if (!headerMap.containsKey("Accept") && !headerMap.containsKey("accept")) {
+            headerMap.put("Accept", "*/*")
+        }
+        if (!headerMap.containsKey("Referer") && !headerMap.containsKey("referer")) {
+            headerMap.put("Referer", scriptContext.getSmsUrlConfig().getWebsite())
+        }
         //解析固定请求参数
         String bindingParams = smsUrlConfig.getBindingParams()
         if (StringUtils.isNotBlank(bindingParams)) {
@@ -241,6 +244,21 @@ trait SmsScript {
         Cipher cipher = Cipher.getInstance(keyFactory.getAlgorithm())
         cipher.init(Cipher.ENCRYPT_MODE, publicKey)
         return cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)).encodeBase64().toString()
+    }
+
+/**
+ * AES加密
+ * @param text
+ * @param encryptionKey
+ * @return
+ */
+    String encryptAes(String text,String encryptionKey) {
+        Key aesKey = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES")
+        if (!text) return text
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey)
+        String encryptedStr = cipher.doFinal(text.getBytes("UTF-8")).encodeHex()
+        return encryptedStr
     }
 
     String getJsonpRequestKey(){

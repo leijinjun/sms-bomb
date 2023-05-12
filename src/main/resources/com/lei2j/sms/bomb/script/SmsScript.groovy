@@ -129,6 +129,9 @@ trait SmsScript {
             if (Objects.nonNull(parseObject)) {
                 for (int i = 0; i < split.length; i++) {
                     parseObject = parseObject.(split[i].trim())
+                    if (parseObject == null) {
+                        return false
+                    }
                 }
                 parseObject = parseObject.toString()
                 return parseObject == value

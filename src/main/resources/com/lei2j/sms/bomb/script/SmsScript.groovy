@@ -12,6 +12,7 @@ import org.apache.http.HeaderElement
 import org.apache.http.message.BasicHeaderElement
 
 import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 import java.nio.charset.StandardCharsets
 import java.security.Key
@@ -246,18 +247,48 @@ trait SmsScript {
         return cipher.doFinal(data.getBytes(StandardCharsets.UTF_8)).encodeBase64().toString()
     }
 
-/**
- * AES加密
- * @param text
- * @param encryptionKey
- * @return
- */
+    /**
+     * AES加密
+     * @param text
+     * @param encryptionKey
+     * @return 返回加密后的16进制字符串
+     */
     String encryptAes(String text,String encryptionKey) {
         Key aesKey = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES")
         if (!text) return text
         Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
         cipher.init(Cipher.ENCRYPT_MODE, aesKey)
         String encryptedStr = cipher.doFinal(text.getBytes("UTF-8")).encodeHex()
+        return encryptedStr
+    }
+
+    /**
+     * AES加密
+     * @param text
+     * @param encryptionKey
+     * @return 返回加密后的base64字符串
+     */
+    String encryptAesBase64(String text,String encryptionKey) {
+        Key aesKey = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES")
+        if (!text) return text
+        Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey)
+        String encryptedStr = cipher.doFinal(text.getBytes("UTF-8")).encodeBase64()
+        return encryptedStr
+    }
+
+    /**
+     * AES加密
+     * @param text
+     * @param encryptionKey
+     * @return
+     */
+    String encryptAes(String text, String encryptionKey, String iv) {
+        Key aesKey = new SecretKeySpec(encryptionKey.getBytes("UTF-8"), "AES")
+        if (!text) return text
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        cipher.init(Cipher.ENCRYPT_MODE, aesKey, new IvParameterSpec(iv.getBytes()))
+        String encryptedStr = cipher.doFinal(text.getBytes("UTF-8")).encodeBase64()
         return encryptedStr
     }
 

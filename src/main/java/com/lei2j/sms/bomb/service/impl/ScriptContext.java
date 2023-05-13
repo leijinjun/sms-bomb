@@ -96,4 +96,8 @@ public class ScriptContext {
     public void setPreScriptContext(ScriptContext preScriptContext) {
         this.preScriptContext = preScriptContext;
     }
+
+    public Object setParamsEntry(String key, Object value) {
+        return getParamsMap().put(key, value);
+    }
 }

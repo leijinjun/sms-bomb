@@ -225,6 +225,10 @@ public class SmsSendService extends CommonServiceImpl {
                 for (int i = 0; i < maxRetryTimes; i++) {
                     try {
                         groovyScriptExecutorService.preInvoke(scriptContext);
+                    } catch (CancelException e) {
+                        logger.warn("[sms.send]该任务取消", e);
+                        response = e.getClass().getName() + ":" + e.getMessage();
+                        break;
                     } catch (Exception e) {
                         logger.error("[sms.send]前置处理异常：", e);
                         continue;

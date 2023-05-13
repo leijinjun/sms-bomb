@@ -3,6 +3,10 @@ package com.lei2j.sms.bomb.script
 import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import com.lei2j.sms.bomb.service.impl.ScriptContext
+import com.sun.imageio.plugins.gif.GIFImageReader
+import com.sun.imageio.plugins.gif.GIFImageReaderSpi
+import com.sun.imageio.plugins.gif.GIFImageWriter
+import com.sun.imageio.plugins.gif.GIFImageWriterSpi
 import groovy.json.JsonSlurper
 import groovy.text.GStringTemplateEngine
 import groovy.xml.XmlSlurper
@@ -14,7 +18,14 @@ import org.apache.http.message.BasicHeaderElement
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
+import javax.imageio.spi.ImageReaderSpi
+import javax.imageio.spi.ImageWriterSpi
+import javax.imageio.stream.FileImageInputStream
+import javax.imageio.stream.FileImageOutputStream
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.security.Key
 import java.security.KeyFactory
 import java.security.spec.X509EncodedKeySpec
@@ -299,4 +310,29 @@ trait SmsScript {
     String getJsonpResponseValue(){
         'jQuery' + RandomStringUtils.randomNumeric(19) + "_" + System.currentTimeMillis()
     }
+
+    File getGifOneFrame(InputStream inputStream,String targetName, int frame) {
+        String path = System.getenv("tmp") +File.separator+ "${targetName}.gif"
+        Files.copy(inputStream, Paths.get(path), StandardCopyOption.REPLACE_EXISTING)
+        ImageReaderSpi readerSpi = new GIFImageReaderSpi()
+        GIFImageReader gifReader = (GIFImageReader) readerSpi.createReaderInstance()
+        gifReader.setInput(new FileImageInputStream(new File(path)))
+        int num = gifReader.getNumImages(true)
+        if (num > frame) {
+            for (int i = 0; i < num; i++) {
+                if (frame == i) {
+                    ImageWriterSpi writerSpi = new GIFImageWriterSpi()
+                    GIFImageWriter writer = (GIFImageWriter) writerSpi.createWriterInstance()
+                    def file = new File(System.getenv("tmp") + File.separator + "${targetName}.jpg")
+                    FileImageOutputStream out = new FileImageOutputStream(file)
+                    writer.setOutput(out)
+                    // 读取读取帧的图片
+                    writer.write(gifReader.read(i))
+                    return file
+                }
+            }
+        }
+        return null
+    }
+
 }

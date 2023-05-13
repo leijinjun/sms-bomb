@@ -3,6 +3,7 @@ package com.lei2j.sms.bomb.util;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.http.*;
 import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
@@ -30,9 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -516,6 +514,8 @@ public class HttpUtils {
                 .setConnectionRequestTimeout(connectionRequestTimeout)
                 .setConnectTimeout(connectionTimeout)
                 .setSocketTimeout(socketTimeout)
+                //同一线程多次请求，不保留上次cookie
+                .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
                 .build());
         return requestBase;
     }

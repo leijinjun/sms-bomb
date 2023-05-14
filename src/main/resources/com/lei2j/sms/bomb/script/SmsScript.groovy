@@ -101,7 +101,8 @@ trait SmsScript {
             def template = stringTemplateEngine.createTemplate(v.toString())
             scriptContext.getParamsMap().put(k, template.make().toString())
         })
-        scriptContext.getSmsUrlConfig().setSmsUrl(stringTemplateEngine.createTemplate(scriptContext.getSmsUrlConfig().getSmsUrl()).make().toString())
+        scriptContext.getSmsUrlConfig().setSmsUrl(stringTemplateEngine.createTemplate(
+                scriptContext.getSmsUrlConfig().getSmsUrl()).make(scriptContext.getParamsMap()).toString())
     }
 
     Boolean postProcess(ScriptContext scriptContext) {

@@ -116,7 +116,7 @@ public class SmsSendService extends CommonServiceImpl {
     }
 
     private void loopCheckSmsSendResult(){
-        checkSendSmsExecutor.scheduleAtFixedRate(() -> {
+        /*checkSendSmsExecutor.scheduleAtFixedRate(() -> {
             if (!CollectionUtils.isEmpty(futureList)) {
                 final Iterator<Future<?>> iterator = futureList.iterator();
                 while (iterator.hasNext()) {
@@ -131,7 +131,7 @@ public class SmsSendService extends CommonServiceImpl {
                     }
                 }
             }
-        }, 10, 5, TimeUnit.SECONDS);
+        }, 10, 5, TimeUnit.SECONDS);*/
     }
 
     public Boolean isFinished(String requestId, int windowSize) {

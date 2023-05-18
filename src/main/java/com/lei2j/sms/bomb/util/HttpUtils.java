@@ -339,7 +339,7 @@ public class HttpUtils {
         }
         HttpPost httpPost = (HttpPost) createHttpRequest(requestURL, HttpPost.METHOD_NAME, headers,
                 requestTimeout, connectTimeout, socketTimeout);
-        httpPost.addHeader("Content-Type", "application/json");
+        httpPost.addHeader("Content-Type", "application/json; charset=UTF-8");
         if (json != null && !json.isEmpty()) {
             httpPost.setEntity(new StringEntity(json, StandardCharsets.UTF_8));
         }
@@ -467,7 +467,7 @@ public class HttpUtils {
         }
         HttpPost httpPost = (HttpPost) createHttpRequest(requestURL, HttpPost.METHOD_NAME, headers,
                 1000 * 15, 1000 * 15, 1000 * 60);
-        httpPost.addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded"));
+        httpPost.addHeader(new BasicHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"));
         if (params != null) {
             List<BasicNameValuePair> pairList =
                     params.entrySet().stream().map(entry -> new BasicNameValuePair(entry.getKey(), entry.getValue().toString())).collect(Collectors.toList());

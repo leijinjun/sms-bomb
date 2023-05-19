@@ -66,7 +66,7 @@ public class SmsSendService extends CommonServiceImpl {
     /**
      * 发送短信失败时最大重试次数
      */
-    @Value("${smb.bomb.send.retry.size:3}")
+    @Value("${smb.bomb.send.retry.size:5}")
     private Integer maxRetryTimes;
 
     public SmsSendService(SmsUrlConfigService smsUrlConfigService,

@@ -3,6 +3,7 @@ package com.lei2j.sms.bomb.script
 import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import com.lei2j.sms.bomb.service.impl.ScriptContext
+import com.lei2j.util.Base64Util
 import com.sun.imageio.plugins.gif.GIFImageReader
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi
 import com.sun.imageio.plugins.gif.GIFImageWriter
@@ -22,6 +23,9 @@ import javax.imageio.spi.ImageReaderSpi
 import javax.imageio.spi.ImageWriterSpi
 import javax.imageio.stream.FileImageInputStream
 import javax.imageio.stream.FileImageOutputStream
+import javax.imageio.stream.ImageOutputStream
+import javax.imageio.stream.MemoryCacheImageInputStream
+import javax.imageio.stream.MemoryCacheImageOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -317,7 +321,8 @@ trait SmsScript {
         Files.copy(inputStream, Paths.get(path), StandardCopyOption.REPLACE_EXISTING)
         ImageReaderSpi readerSpi = new GIFImageReaderSpi()
         GIFImageReader gifReader = (GIFImageReader) readerSpi.createReaderInstance()
-        gifReader.setInput(new FileImageInputStream(new File(path)))
+        def imageInputStream = new FileImageInputStream(new File(path))
+        gifReader.setInput(imageInputStream)
         int num = gifReader.getNumImages(true)
         if (num > frame) {
             for (int i = 0; i < num; i++) {
@@ -329,11 +334,46 @@ trait SmsScript {
                     writer.setOutput(out)
                     // 读取读取帧的图片
                     writer.write(gifReader.read(i))
+                    out.flush()
+                    out.close()
+                    imageInputStream.close()
                     return file
                 }
             }
+        } else {
+            imageInputStream.close()
         }
         return null
+    }
+
+/**
+ *
+ * @param base64 图片base64
+ * @param frame 获取第几帧，等于-1时，返回所有帧
+ * @return 返回帧图片的base64格式集合
+ */
+    List<String> getGifFrame(String base64, int frame) {
+        List<String> result = new ArrayList<>()
+        ImageReaderSpi readerSpi = new GIFImageReaderSpi()
+        GIFImageReader gifReader = (GIFImageReader) readerSpi.createReaderInstance()
+        gifReader.setInput(new MemoryCacheImageInputStream(new ByteArrayInputStream(Base64Util.decode(base64))))
+        int num = gifReader.getNumImages(true)
+        if (num > frame) {
+            for (int i = 0; i < num; i++) {
+                ImageWriterSpi writerSpi = new GIFImageWriterSpi()
+                GIFImageWriter writer = (GIFImageWriter) writerSpi.createWriterInstance()
+                if (frame == -1 || frame == i) {
+                    def outputStream = new ByteArrayOutputStream()
+                    ImageOutputStream out = new MemoryCacheImageOutputStream(outputStream)
+                    writer.setOutput(out)
+                    // 读取读取帧的图片
+                    writer.write(gifReader.read(i))
+                    out.flush()
+                    result.add(Base64Util.encodeToString(outputStream.toByteArray()))
+                }
+            }
+        }
+        return result
     }
 
 }

@@ -208,26 +208,46 @@ trait SmsScript {
     }
 
     void setCookie(Map<String, List<HeaderElement[]>> responseHeaderMap, Map<String, String> headerMap, boolean ifPresentReserve) {
-        def headerElements = responseHeaderMap.get('Set-Cookie')?responseHeaderMap.get('Set-Cookie'):responseHeaderMap.get('set-cookie')
-        if (headerElements) {
-            headerElements.stream().forEach(c -> {
-                String cookie = headerMap.get('Cookie')
-                if (cookie) {
-                    List<String> list = new ArrayList<>(Arrays.asList(cookie.split(';')))
-                    boolean exist = list.stream().anyMatch(p -> {
-                        String[] itemSplit = p.split('=', 2)
-                        return Objects.equals(itemSplit[0].trim(), c[0].getName())
-                    })
-                    if (!(exist && ifPresentReserve)) {
-                        list.removeIf(p -> p.trim().startsWith(c[0].getName().trim()))
-                        list.add(c[0].getName() + '=' + c[0].getValue())
-                    }
-                    headerMap.put('Cookie', String.join(';', list))
-                } else {
-                    headerMap.put('Cookie', String.format('%s=%s', c[0].getName(), c[0].getValue()))
-                }
-            })
+        if (responseHeaderMap.containsKey("Set-Cookie")) {
+            def headerElements = responseHeaderMap.get('Set-Cookie') as List<HeaderElement[]>
+            setCookie(headerElements, headerMap, ifPresentReserve)
         }
+        if (responseHeaderMap.containsKey("set-cookie")) {
+            def headerElements = responseHeaderMap.get('set-cookie') as List<HeaderElement[]>
+            setCookie(headerElements, headerMap, ifPresentReserve)
+        }
+        if (responseHeaderMap.containsKey("set-Cookie")) {
+            def headerElements = responseHeaderMap.get('set-Cookie') as List<HeaderElement[]>
+            setCookie(headerElements, headerMap, ifPresentReserve)
+        }
+        if (responseHeaderMap.containsKey("Set-cookie")) {
+            def headerElements = responseHeaderMap.get('Set-cookie') as List<HeaderElement[]>
+            setCookie(headerElements, headerMap, ifPresentReserve)
+        }
+        if (responseHeaderMap.containsKey("SET-COOKIE")) {
+            def headerElements = responseHeaderMap.get('SET-COOKIE') as List<HeaderElement[]>
+            setCookie(headerElements, headerMap, ifPresentReserve)
+        }
+    }
+
+    void setCookie(List<HeaderElement[]> headerElements, Map<String, String> headerMap, boolean ifPresentReserve){
+        headerElements.stream().forEach(c -> {
+            String cookie = headerMap.get('Cookie')
+            if (cookie) {
+                List<String> list = new ArrayList<>(Arrays.asList(cookie.split(';')))
+                boolean exist = list.stream().anyMatch(p -> {
+                    String[] itemSplit = p.split('=', 2)
+                    return Objects.equals(itemSplit[0].trim(), c[0].getName())
+                })
+                if (!(exist && ifPresentReserve)) {
+                    list.removeIf(p -> p.trim().startsWith(c[0].getName().trim()))
+                    list.add(c[0].getName() + '=' + c[0].getValue())
+                }
+                headerMap.put('Cookie', String.join(';', list))
+            } else {
+                headerMap.put('Cookie', String.format('%s=%s', c[0].getName(), c[0].getValue()))
+            }
+        })
     }
 
     String getCookieValue(Map<String, String> headerMap, String key) {

@@ -368,12 +368,12 @@ trait SmsScript {
         return null
     }
 
-/**
- *
- * @param base64 图片base64
- * @param frame 获取第几帧，等于-1时，返回所有帧
- * @return 返回帧图片的base64格式集合
- */
+    /**
+     *
+     * @param base64 图片base64
+     * @param frame 获取第几帧，等于-1时，返回所有帧
+     * @return 返回帧图片的base64格式集合
+     */
     List<String> getGifFrame(String base64, int frame) {
         List<String> result = new ArrayList<>()
         ImageReaderSpi readerSpi = new GIFImageReaderSpi()
@@ -398,4 +398,19 @@ trait SmsScript {
         return result
     }
 
+    /**
+     *
+     * @param inputStream 图片gif流
+     * @param frame 获取第几帧，等于-1时，返回所有帧
+     * @return 返回帧图片的base64格式集合
+     */
+    List<String> getGifFrame(InputStream inputStream, int frame) {
+        byte[] b = new byte[4096]
+        int len = 0
+        ByteArrayOutputStream out = new ByteArrayOutputStream()
+        while ((len = inputStream.read(b)) != -1) {
+            out.write(b, 0, len)
+        }
+        getGifFrame(Base64Util.encodeToString(out.toByteArray()), -1)
+    }
 }

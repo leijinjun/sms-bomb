@@ -5,6 +5,7 @@ import com.lei2j.sms.bomb.util.SpringApplicationUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -79,6 +80,16 @@ public class ScriptContext {
      */
     public final String getPhoneValue(){
         return paramsMap.get(getPhoneParamName()).toString();
+    }
+
+    public void cloneFromPre() {
+        if (Objects.nonNull(preScriptContext)) {
+            return;
+        }
+        getParamsMap().putAll(preScriptContext.getParamsMap());
+        getQueryMap().putAll(preScriptContext.getQueryMap());
+        getHeaderMap().putAll(preScriptContext.getHeaderMap());
+        getContextDataMap().putAll(preScriptContext.getContextDataMap());
     }
 
     public SpringApplicationUtils getSpringApplicationUtils() {

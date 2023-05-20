@@ -398,22 +398,14 @@
                 let passed = true;
                 if (!this.bindingParamForm.key) {
                     this.bindingParamFormValidate.key = true;
-                    this.errors.push('Key不能为空');
+                    this.errors.push('key不能为空');
                     passed = false;
                 }else if(this.form[formItemKey]&&this.form[formItemKey][this.bindingParamForm.key]) {
                     this.bindingParamFormValidate.key = true;
-                    this.errors.push('Key已经存在');
+                    this.errors.push('key已经存在');
                     passed = false;
                 }else{
                     this.bindingParamFormValidate.key = false;
-                    passed &= true;
-                }
-                if (!this.bindingParamForm.value) {
-                    this.bindingParamFormValidate.value = true;
-                    this.errors.push('Value不能为空');
-                    passed = false;
-                }else{
-                    this.bindingParamFormValidate.value = false;
                     passed &= true;
                 }
                 return passed;

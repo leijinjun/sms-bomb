@@ -29,12 +29,12 @@ public class ScriptContext {
 
     private String response;
 
-    private SpringApplicationUtils springApplicationUtils;
+    private transient SpringApplicationUtils springApplicationUtils;
 
     /**
      * 上一次脚本上下文内容
      */
-    private ScriptContext preScriptContext;
+    private transient ScriptContext preScriptContext;
 
     public SmsUrlConfig getSmsUrlConfig() {
         return smsUrlConfig;

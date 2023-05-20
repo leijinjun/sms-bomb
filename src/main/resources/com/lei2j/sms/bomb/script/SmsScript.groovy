@@ -1,5 +1,6 @@
 package com.lei2j.sms.bomb.script
 
+import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
 import com.lei2j.sms.bomb.entity.SmsUrlConfig
 import com.lei2j.sms.bomb.service.impl.ScriptContext
@@ -92,18 +93,19 @@ trait SmsScript {
      * 解析表达式
      * @param scriptContext
      */
-    void parseExpressionScriptContext(ScriptContext scriptContext){
+    void parseExpressionScriptContext(ScriptContext scriptContext) {
+        def map = JSON.parseObject(JSON.toJSONString(scriptContext), Map.class)
         scriptContext.getQueryMap().forEach((k, v) -> {
             def template = stringTemplateEngine.createTemplate(v.toString())
-            scriptContext.getQueryMap().put(k, template.make().toString())
+            scriptContext.getQueryMap().put(k, template.make(map).toString())
         })
         scriptContext.getHeaderMap().forEach((k, v) -> {
             def template = stringTemplateEngine.createTemplate(v.toString())
-            scriptContext.getHeaderMap().put(k, template.make().toString())
+            scriptContext.getHeaderMap().put(k, template.make(map).toString())
         })
         scriptContext.getParamsMap().forEach((k, v) -> {
             def template = stringTemplateEngine.createTemplate(v.toString())
-            scriptContext.getParamsMap().put(k, template.make().toString())
+            scriptContext.getParamsMap().put(k, template.make(map).toString())
         })
         scriptContext.getSmsUrlConfig().setSmsUrl(stringTemplateEngine.createTemplate(
                 scriptContext.getSmsUrlConfig().getSmsUrl()).make(scriptContext.getParamsMap()).toString())

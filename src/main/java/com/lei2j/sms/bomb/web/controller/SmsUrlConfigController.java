@@ -75,7 +75,10 @@ public class SmsUrlConfigController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<Void> update(SmsUrlConfig smsUrlConfig) {
+    public ResponseEntity update(SmsUrlConfig smsUrlConfig) {
+        if (StringUtils.isBlank(smsUrlConfig.getSmsUrl())) {
+            return ResponseEntity.badRequest().body("接口地址不能为空");
+        }
         return Optional.of(smsUrlConfig)
                 .map(c -> {
                     Long id = c.getId();

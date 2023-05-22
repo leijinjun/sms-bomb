@@ -15,10 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.*;
-import java.time.temporal.ChronoField;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -51,7 +48,7 @@ public class SmsBombController {
     }
 
     @PostMapping("/smsBomb/send")
-    public ResponseEntity<String> send(@RequestParam("phone") String phone,
+    public ResponseEntity<Object> send(@RequestParam("phone") String phone,
                                        @RequestParam("sendItems") Integer sendItems,
                                        HttpServletRequest request) {
         if (!phonePattern.asPredicate().test(phone)) {
@@ -80,8 +77,12 @@ public class SmsBombController {
         smsSendDTO.setClientIp(clientIp);
         smsSendDTO.setRequestId(requestId);
         smsSendDTO.setSendItems(sendItems);
-        final boolean send = smsSendService.send(smsSendDTO);
-        return send ? ResponseEntity.ok(requestId) : ResponseEntity.unprocessableEntity().body("没有可用的短信API资源");
+        Integer sendSize = smsSendService.send(smsSendDTO);
+        Map<String, Object> resultMap = new HashMap<>(3);
+        resultMap.put("requestId", requestId);
+        resultMap.put("sendSize", sendSize);
+        return sendSize != null && sendSize > 0 ? ResponseEntity.ok(resultMap) : ResponseEntity.unprocessableEntity().body(
+                "没有可用的短信API资源");
     }
 
     @RequestMapping("/smsBomb/shutdown/{id}")
@@ -99,7 +100,7 @@ public class SmsBombController {
         Object[] result = new Object[]{0, 0};
         Boolean finished = smsSendService.isFinished(requestId, sendSize);
         result[0] = Objects.equals(true, finished) ? 1 : 0;
-        TimeUnit.SECONDS.sleep(1);
+        TimeUnit.MILLISECONDS.sleep(500);
         List<GroupStatus> mapList = smsSendLogRepository.groupByResponseStatus(requestId);
         int totalCount = mapList.stream().mapToInt(GroupStatus::getTotalCount).sum();
         result[1] =

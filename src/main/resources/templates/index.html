@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,39 +9,117 @@
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
 </head>
 <body>
-<div class="container-fluid" id="app">
-    <div class="jumbotron jumbotron-fluid">
-        <div class="container">
-            <h1 class="display-4">免费在线发送短信验证码</h1>
-            <p class="lead">仅供交流学习使用。</p>
+<div class="container-lg" id="app">
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-lg-10">
+            <div class="jumbotron">
+                <h1 class="display-4">免费在线短信轰炸</h1>
+            </div>
+        </div>
+        <div class="col">
         </div>
     </div>
-    <div class="row" style="margin-left: 30%;">
-        <div class="col-auto">
-            <form class="form-inline">
-                <div class="form-group mx-sm-3 mb-2">
-                    <label for="inputPhone" class="sr-only">手机号</label>
-                    <input type="text" class="form-control" id="inputPhone" placeholder="手机号" v-model="form.phone">
+    <div class="row">
+        <div class="col">
+        </div>
+        <div class="col-lg-10">
+            <!--<form>
+                <div class="form-row">
+                        <div class="form-group col-4">
+                            <div class="form-group">
+                                <label for="inputPhone" class="sr-only">手机号</label>
+                                <input type="text" name="inputPhone" class="form-control" id="inputPhone" placeholder="手机号" v-model="form.phone">
+                            </div>
+                        </div>
+                        <div class="form-group col-4">
+                            <div class="form-group">
+                                <select class="form-control" id="sendItems" name="sendItems" v-model="form.sendItems">
+                                    <option selected>请选择轰炸次数</option>
+                                    <option :value="1">1</option>
+                                    <option :value="5">5</option>
+                                    <option :value="10">10</option>
+                                    <option :value="25">25</option>
+                                    <option :value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-4">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-primary text-nowrap" @click="submit()">提交</button>
+                                <button type="button" class="btn btn-primary text-nowrap" @click="shutdown()">停止</button>
+                                <button type="button" class="btn btn-primary text-nowrap" @click="finish()">更新结果</button>
+                            </div>
+                        </div>
                 </div>
-                <div class="form-group mx-sm-3 mb-2">
-                    <label for="sendItems">发送条数</label>
-                    <select class="form-control" id="sendItems" v-model="form.sendItems">
-                        <option selected :value="1">1</option>
-                        <option :value="5">5</option>
-                        <option :value="10">10</option>
-                        <option :value="25">25</option>
-                        <option :value="50">50</option>
-                    </select>
+                <div class="progress" style="height: 24px;" :style="{display:display}">
+                    <div class="progress-bar progress-bar-striped" :class="{'progress-bar-animated':code===0}"
+                         role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                         style="width: 100%;background-color: #1abc9c;line-height: 24px;">发送条数：{{successNum}}</div>
                 </div>
-                <button type="button" class="btn btn-primary mb-2" @click="submit()">提交</button>&nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="button" class="btn btn-secondary mb-2" @click="shutdown()">停止</button>&nbsp;&nbsp;&nbsp;&nbsp;
-                <button type="button" class="btn btn-secondary mb-2" @click="finish()">更新结果</button>&nbsp;&nbsp;&nbsp;&nbsp;
+            </form>-->
+            <form class="needs-validation" novalidate>
+                <div class="form-row">
+                    <div class="form-group col-md-4">
+                        <label for="inputPhone" class="sr-only">手机号</label>
+                        <input type="text" name="inputPhone" v-bind:class="['form-control',formValidate.phone]"
+                               id="inputPhone"
+                               placeholder="手机号"
+                               v-model="form.phone" required maxlength="13" aria-describedby="validationPhoneFeedback">
+                        <div id="validationPhoneFeedback" class="invalid-feedback">
+                            手机号格式错误
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="sendItems" class="sr-only">轰炸次数</label>
+                        <select v-bind:class="['form-control',formValidate.sendItems]" id="sendItems" name="sendItems" v-model="form.sendItems"
+                                required aria-describedby="validationSendTimesFeedback">
+                            <option selected value="">请选择轰炸次数</option>
+                            <option :value="1">1</option>
+                            <option :value="5">5</option>
+                            <option :value="10">10</option>
+                            <option :value="25">25</option>
+                            <option :value="50">50</option>
+                        </select>
+                        <div id="validationSendTimesFeedback" class="invalid-feedback">
+                            请设置轰炸次数
+                        </div>
+                    </div>
+                    <div class="form-group col-md-4">
+                        <label for="cyclesTimes" class="sr-only">循环次数</label>
+                        <select v-bind:class="['form-control',formValidate.cyclesTimes]" id="cyclesTimes" name="cyclesTimes" v-model="form.cyclesTimes"
+                                required aria-describedby="validationCyclesTimesFeedback">
+                            <option selected value="">请选择循环次数</option>
+                            <option :value="1">1</option>
+                            <option :value="2">2</option>
+                            <option :value="3">3</option>
+                            <option :value="4">4</option>
+                            <option :value="5">5</option>
+                        </select>
+                        <div id="validationCyclesTimesFeedback" class="invalid-feedback">
+                            请设置循环次数
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary text-nowrap" @click="submit(true)">提交</button>
+                    <button type="button" class="btn btn-primary text-nowrap" @click="shutdown()">停止</button>
+                    <button type="button" class="btn btn-primary text-nowrap" @click="finish()">更新结果</button>
+                </div>
             </form>
-            <div class="progress" style="height: 24px;" :style="{display:display}">
+            <div class="progress" style="height: 24px;margin-top: 15px;border-radius: .25rem;" :style="{display:display}">
                 <div class="progress-bar progress-bar-striped" :class="{'progress-bar-animated':code===0}"
                      role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
-                     style="width: 100%;background-color: #1abc9c;line-height: 24px;">发送条数：{{successNum}}</div>
+                     style="width: 100%;background-color: #1abc9c;line-height: 24px;">
+                    <span>开始第{{whichRound}}轮轰炸，已发送条数：{{successNum}}</span>
+                </div>
             </div>
+            <p class="text-center text-monospace text-primary font-weight-bolder"
+               :style="{display: whichRoundDisplay,color:'#007bff!important'}">
+                请等待2分钟后进入下一轮轰炸，请不要离开页面。</p>
+        </div>
+        <div class="col">
         </div>
     </div>
 </div>
@@ -59,29 +137,60 @@
             display:'none',
             phoneRegex:/^1[3456789]\d{9}$/,
             form:{
-                phone:''
+                phone:'',
+                sendItems:'',
+                cyclesTimes:''
             },
+            formValidate:{
+                phone:'',
+                sendItems:'',
+                cyclesTimes:''
+            },
+            whichRoundDisplay:'none',
+            //剩余循环次数
+            remainCycleTimes:0,
+            //每轮发送结果数
+            successSend:{
+            },
+            //当前轮数
+            whichRound:0,
+            //已成功总条数
             successNum:0,
-            sendItems:null,
+            //每轮待发送条数
+            sendSize:0,
             code:0,
-            requestId:null
+            //循环阻塞时间，单位毫秒
+            roundSleep:1000*60*2
         },
         created:function () {
         },
         methods:{
-            submit:function () {
-                this.display = 'none';
+            submit:function (first) {
+                this.code = 0;
+                if (first) {
+                    this.display = 'none';
+                    this.successSend = {};
+                    this.successNum = 0;
+                    this.remainCycleTimes = 0;
+                    this.whichRound = 0;
+                }
+                this.whichRoundDisplay = 'none'
                 if (!this.checkForm()) {
                     return;
                 }
+                this.remainCycleTimes = first ? (parseInt(this.form.cyclesTimes) - 1) : (this.remainCycleTimes - 1);
                 let $this = this;
-                $http.post(contextPath+'/smsBomb/send',{phone:this.form.phone,sendItems: this.form.sendItems})
+                $http.post(contextPath+'/smsBomb/send',
+                    {phone:this.form.phone.replace(/\s/g, ""),
+                    sendItems: this.form.sendItems})
                 .then(function (res) {
                     $this.display = 'block';
                     gft.alert.success('操作成功', 2000);
-                    $this.requestId = res;
+                    $this.successSend[res.requestId] = 0;
+                    $this.sendSize = res.sendSize;
+                    ++$this.whichRound
                     setTimeout(function () {
-                        $this.getResult(res,$this.form.sendItems);
+                        $this.getResult(res.requestId,res.sendSize);
                     }, 1500);
                 },function (error) {
                     gft.alert.error(error, 2000);
@@ -91,51 +200,97 @@
             },
             shutdown:function(){
                 let $this = this;
-                if (!$this.requestId) {
+                if (!$this.successSend) {
                     return;
                 }
-                $http.post("/smsBomb/shutdown/"+$this.requestId)
-                .then(function (res) {
-                });
+                for (var key in $this.successSend) {
+                    $http.post("/smsBomb/shutdown/"+key)
+                        .then(function (res) {
+                        });
+                }
             },
             finish:function(){
-                if (!this.requestId) {
+                if (!this.successSend) {
                     return;
                 }
-                this.getResult(this.requestId,this.form.sendItems);
+                for (var key in this.successSend) {
+                    this.getResult(key,this.sendSize,true);
+                }
             },
-            getResult(requestId,sendSize){
+            getResult(requestId,sendSize,finish){
                 let $this = this;
                 $http.get(contextPath + '/smsBomb/getResult', {'requestId': requestId,'sendSize':sendSize})
                     .then(function (res) {
                         let code = res[0];
                         let successNum = res[1];
-                        Vue.set($this, 'successNum', successNum);
+                        $this.successSend[requestId] = successNum + $this.successSend[requestId];
+                        let total = 0;
+                        for (var key in $this.successSend) {
+                            total += $this.successSend[key];
+                        }
+                        Vue.set($this, 'successNum', total);
                         if (code === 1) {
                             $this.code = code;
+                            if ($this.remainCycleTimes > 0) {
+                                Vue.set($this, 'whichRoundDisplay', 'block');
+                                setTimeout(() => {
+                                    $this.submit(false)
+                                }, $this.roundSleep);
+                            } else {
+                                gft.alert.success("轰炸已结束，请关闭网页或选择继续轰炸。",2000);
+                            }
                             return;
                         }
-                        setTimeout(function () {
-                            $this.getResult(requestId,sendSize);
-                        }, 1500);
+                        if (!finish) {
+                            setTimeout(function () {
+                                $this.getResult(requestId,sendSize);
+                            }, 1500);
+                        }
                     }).catch(function (reason) {
                 })
             },
             checkForm(){
-                if (!this.form.phone) {
-                    gft.alert.error('手机号不能为空！', 2000);
+                let passed = true;
+                if (!this.form.phone || !this.phoneRegex.test(this.form.phone.replace(/[^0-9]/ig, ""))) {
+                    // gft.alert.error('手机号不能为空！', 2000);
+                    this.formValidate.phone = 'is-invalid';
+                    passed = false;
+                } else {
+                    this.formValidate.phone = 'is-valid';
+                }
+                if (!this.form.sendItems) {
+                    this.formValidate.sendItems = 'is-invalid';
+                    passed = false;
+                } else {
+                    this.formValidate.sendItems = 'is-valid';
+                }
+                if (!this.form.cyclesTimes) {
+                    this.formValidate.cyclesTimes = 'is-invalid';
+                    passed = false;
+                } else {
+                    this.formValidate.cyclesTimes = 'is-valid';
+                }
+                if (!passed) {
+                    // document.getElementsByClassName('needs-validation').checkValidity();
                     return false;
                 }
-                if (!this.phoneRegex.test(this.form.phone)) {
-                    gft.alert.error('手机号非法！', 2000);
-                    return false;
-                }
-                this.code = 0;
-                this.successNum = 0;
-                this.requestId = null;
                 return true;
             }
         }
-    })
+    });
+    $('#inputPhone').on('keyup', function () {
+        var that = $(this);
+        var value = that.val();
+        value = value.replace(/[^0-9]/ig, "");
+        var arr = value.split('');
+        if (arr.length >= 4) {
+            arr.splice(3, 0, ' ');
+        }
+        if (arr.length >= 9) {
+            arr.splice(8, 0, ' ');
+        }
+        value = arr.join('');
+        that.val(value);
+    });
 </script>
 </html>

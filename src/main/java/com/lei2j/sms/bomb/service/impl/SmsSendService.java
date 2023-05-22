@@ -80,9 +80,9 @@ public class SmsSendService extends CommonServiceImpl {
         loopCheckSmsSendResult();
     }
 
-    public boolean send(SmsSendDTO smsSendDTO) {
+    public Integer send(SmsSendDTO smsSendDTO) {
         if (StringUtils.isBlank(smsSendDTO.getPhone())) {
-            return false;
+            return 0;
         }
         Integer windowSize = smsSendDTO.getSendItems();
         List<SmsUrlConfig> list = smsUrlConfigService.get(windowSize);
@@ -96,9 +96,9 @@ public class SmsSendService extends CommonServiceImpl {
                 final Future<?> future = executorService.submit(new SmsTask(entity, smsSendDTO));
                 futureList.add(future);
             }
-            return true;
+            return list.size();
         } else {
-            return false;
+            return 0;
         }
     }
 

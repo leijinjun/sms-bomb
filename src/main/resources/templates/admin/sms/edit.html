@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${#strings.isEmpty(param.id)}?'新建短信接口':'编辑短信接口信息'">编辑</title>
+    <!--网页标题左侧显示-->
+    <link rel="icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
+    <!--收藏夹显示图标-->
+    <link rel="shortcut icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
 </head>

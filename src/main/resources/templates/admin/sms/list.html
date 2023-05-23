@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>短信网站来源配置</title>
+    <title>网站短信API接入配置</title>
+    <!--网页标题左侧显示-->
+    <link rel="icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
+    <!--收藏夹显示图标-->
+    <link rel="shortcut icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
     <style>
@@ -22,7 +26,6 @@
             <div class="row" style="height: 62px;">
                 <div class="col-md-4"></div>
             </div>
-            <h5>短信网站来源配置</h5>
             <div class="row">
                 <form id="search-form" class="form-inline" role="form" style="width: 100%;">
                     <div class="form-group">

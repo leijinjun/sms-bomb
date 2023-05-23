@@ -4,7 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>在线短信轰炸</title>
+    <title>短信轰炸机</title>
+    <!--网页标题左侧显示-->
+    <link rel="icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
+    <!--收藏夹显示图标-->
+    <link rel="shortcut icon" th:href="@{{contextPath}/img/favicon.ico(contextPath=${application.smsBombStaticPath})}" type="image/x-icon">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
 </head>
@@ -203,6 +207,7 @@
                 if (!$this.successSend) {
                     return;
                 }
+                $this.code = 1;
                 for (var key in $this.successSend) {
                     $http.post("/smsBomb/shutdown/"+key)
                         .then(function (res) {
@@ -230,13 +235,13 @@
                         }
                         Vue.set($this, 'successNum', total);
                         if (code === 1) {
-                            $this.code = code;
                             if ($this.remainCycleTimes > 0) {
                                 Vue.set($this, 'whichRoundDisplay', 'block');
                                 setTimeout(() => {
                                     $this.submit(false)
                                 }, $this.roundSleep);
                             } else {
+                                $this.code = code;
                                 gft.alert.success("轰炸已结束，请关闭网页或选择继续轰炸。",2000);
                             }
                             return;

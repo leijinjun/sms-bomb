@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,140 +12,135 @@
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/css/bootstrap.min.css(contextPath=${application.smsBombStaticPath})}">
     <link rel="stylesheet" th:href="@{{contextPath}/js/bootstrap@4.6.0/flat-ui/css/flat-ui.min.css(contextPath=${application.smsBombStaticPath})}">
     <style>
-        .form-group {
-            margin-right: 20px;
-        }
         .table {table-layout:fixed;word-break:break-all;}
     </style>
 </head>
 <body>
-<div class="container-fluid" id="app">
+<div class="container-lg" id="app">
     <div class="row">
-        <div class="col-xs-1 col-sm-3 col-md-2"></div>
-        <div class="col-xs-10 col-sm-6 col-md-8">
-            <div class="row" style="height: 62px;">
-                <div class="col-md-4"></div>
-            </div>
-            <div class="row">
-                <form id="search-form" class="form-inline" role="form" style="width: 100%;">
-                    <div class="form-group">
-                        <label for="websiteName">
-                            <input type="text" class="form-control" id="websiteName" name="websiteName"
-                                   v-model="params.websiteName" placeholder="网站名称"/>
+        <div class="col-auto">
+            <form id="search-form" role="form" class="form-inline">
+                <div class="form-row align-items-center" style="margin-top: 20px;">
+                    <div class="col-auto">
+                        <label for="websiteName" class="sr-only">
+                            网站名称
                         </label>
+                        <input type="text" class="form-control mb-2" id="websiteName" name="websiteName"
+                               v-model="params.websiteName" placeholder="网站名称"/>
                     </div>
-                    <div class="form-group">
-                        <label>
-                            <select class="form-control" name="normal" v-model="params.normal" style="min-width: 190px;">
-                                <option value="" selected>请选择状态</option>
-                                <option value="true">正常</option>
-                                <option value="false">禁用</option>
-                            </select>
+                    <div class="col-auto">
+                        <label for="websiteName" class="sr-only">
+                            请选择状态
                         </label>
+                        <select class="form-control mb-2" id="websiteName" name="normal" v-model="params.normal">
+                            <option value="" selected>请选择状态</option>
+                            <option value="true">正常</option>
+                            <option value="false">禁用</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <button id="search" type="button" class="btn btn-primary" @click="search()"
-                                style="margin-right: 10px;">Filter
+                    <div class="btn-group col-auto" role="group">
+                        <button id="search" type="button" class="btn btn-primary mb-2 text-nowrap" @click="search()">Filter
                         </button>
-                        <input id="resetBtn" type="button" class="btn btn-primary" value="Reset" @click="reset()"/>
+                        <input id="resetBtn" type="button" class="btn btn-primary mb-2 text-nowrap" value="Reset"
+                               @click="reset()"/>
                     </div>
-                    <!--<div class="col-md-2">
-
-                    </div>
-                    <div class="col-md-2">
-
-                    </div>-->
-                </form>
-            </div>
-            <div style="margin-top: 40px;">
-                <p><a th:href="edit" class="btn btn-primary">新增</a>
-                <a href="javascript:void(0);" @click="allUpdateStatus(1)" class="btn btn-primary">全部启用</a>
-                <a href="javascript:void(0);" @click="allUpdateStatus(0)" class="btn btn-primary">全部禁用</a></p>
+                </div>
+            </form>
+            <div>
+                <div class="btn-group" role="group">
+                    <a th:href="edit" class="btn btn-primary mb-2 text-nowrap">新增</a>
+                    <a href="javascript:void(0);" @click="allUpdateStatus(1)" class="btn btn-primary mb-2 text-nowrap">全部启用</a>
+                    <a href="javascript:void(0);" @click="allUpdateStatus(0)" class="btn btn-primary mb-2 text-nowrap">全部禁用</a>
+                </div>
                 <table class="table table-bordered table-hover table-responsive-lg">
                     <thead>
                     <tr>
                         <th scope="col">操作</th>
-                        <th scope="col">状态</th>
-                        <th scope="col">图标</th>
                         <th scope="col">网站</th>
-                        <th scope="col">短信接口</th>
-                        <th scope="col">手机号参数名</th>
-                        <th scope="col">脚本开启</th>
-                        <th scope="col">最后使用时间</th>
-                        <th scope="col">创建日期</th>
+                        <th scope="col">状态</th>
+                        <th scope="col" class="text-nowrap overflow-hidden">短信接口地址</th>
+                        <th scope="col" class="text-nowrap overflow-hidden">手机号参数名称</th>
+                        <th scope="col" class="text-nowrap overflow-hidden">脚本开启状态</th>
+                        <th scope="col" class="text-nowrap overflow-hidden">最后使用时间</th>
+                        <th scope="col" class="text-nowrap overflow-hidden">创建日期</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-if="pager.data.length == 0"><td colspan="10" style="text-align: center;">没有匹配的记录</td></tr>
+                    <tr v-if="loading">
+                        <td colspan="10" rowspan="2" style="text-align: center;"><div
+                                class="spinner-grow text-primary"></div>
+                        </td>
+                    </tr>
+                    <tr v-if="pager.data.length == 0&&!loading"><td colspan="10" style="text-align: center;">没有匹配的记录
+                    </td></tr>
                     <!-- 若存在表单输入值则需要设置:key,区别每一条记录 -->
                     <tr v-for="item in pager.data" v-bind:key="item.id">
-                        <td>
-                            <a :href="'edit.html?id='+item.id">编辑</a>
+                        <td class="text-nowrap">
+                            <a :href="'edit.html?id='+item.id" >编辑</a>
                             <!--                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#edit-modal" >编辑</button>-->
+                        </td>
+                        <td style="max-width: 120px;" class="text-nowrap overflow-hidden text-truncate" v-bind:title="item.websiteName">
+                            <a :href="item.website" style="text-decoration: none;"
+                               :style="item.website ? '':'cursor: not-allowed;'"
+                               target="_blank">{{item.websiteName}}</a>
                         </td>
                         <td>
                             <label>
                                 <input type="checkbox" :checked="item.normal" data-toggle="switch" data-on-color="success"
                                        data-on-text="正常" data-off-text="禁用" :data-id="item.id"/>
-                                <!--<input type="checkbox" name="normal" data-toggle="switch" data-on-color="secondary"
-                                       data-off-color="default" :data-id="item.id" :checked="item.normal"
-                                       v-model="item.normal">-->
                             </label>
                         </td>
-                        <td style="padding: 13px;">
-                            <img :src="item.icon" style="border: 0;" width="75px;" height="auto;"/>
-                        </td>
-                        <td style="max-width: 120px;"><a :href="item.website" style="text-decoration: none;"
-                               :style="item.website ? '':'cursor: not-allowed;'"
-                               target="_blank">{{item.websiteName}}</a></td>
-                        <td ><div style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:60px;">{{item .smsUrl}}</div></td>
-                        <td>{{item.phoneParamName}}</td>
+                        <td class="text-nowrap overflow-hidden text-truncate" v-bind:title="item.smsUrl">{{item .smsUrl}}</td>
+                        <td class="text-nowrap overflow-hidden text-truncate" v-bind:title="item.phoneParamName">{{item.phoneParamName}}</td>
                         <td>
                             <span v-if="item.openScript" class="text-success">启用</span>
                             <span v-else class="text-danger">关闭</span>
                         </td>
-                        <td style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:30px;">
+                        <td class="text-nowrap overflow-hidden text-truncate" v-bind:title="item.lastUsedTime">
                             {{item.lastUsedTime}}</td>
-                        <td style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:30px;">{{item.createAt}}</td>
+                        <!--style="white-space: nowrap;text-overflow: ellipsis;overflow:hidden;max-width:30px;"-->
+                        <td class="text-nowrap overflow-hidden text-truncate" v-bind:title="item.createAt">
+                            {{item.createAt}}</td>
                     </tr>
                     </tbody>
                 </table>
                 <nav aria-label="...">
                     <div class="pull-left pagination-detail">
-                        <span class="pagination-info">总共 {{pager.tc}} 条记录</span>
-                        <span class="page-list">每页显示
-                        <span class="btn-group dropdown dropup">
-                            <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
-                                <span id="showPageSize" class="page-size">{{pager.ps}}</span>
-                                <span class="caret"></span>
-                            </button>
-                            <ul class="dropdown-menu" role="menu">
-                                <li role="menuitem" :class="{active:pager.ps==20}" @click="getPage(1,20)"><a>20</a></li>
-                                <li role="menuitem" :class="{active:pager.ps==25}" @click="getPage(1,25)"><a>25</a></li>
-                                <li role="menuitem" :class="{active:pager.ps==50}" @click="getPage(1,50)"><a>50</a></li>
-                                <li role="menuitem" :class="{active:pager.ps==100}" @click="getPage(1,100)"><a>100</a></li>
-                            </ul>
-                        </span> 条记录
-                    </span>
-                        <div class="pagination pagination-success" style="margin-left: 5px;">
-                            <a href="javascript:void(0);" class="btn btn-primary previous"
-                               :class="{disabled:pager.pn===1}"
-                               @click="getPage(pager.pn-1,pager.ps)">
-                                <i class="fui-arrow-left"></i>
-                                上一页
-                            </a>
-                            <a href="javascript:void(0);" class="btn btn-primary next" :class="{disabled:pager.pn>=pager.tp}"
-                               @click="getPage(pager.pn+1,pager.ps)"
-                               style="width: 112px;margin-left: -10px;">
-                                下一页
-                                <i class="fui-arrow-right"></i>
-                            </a>
+                        <div class="page-list">
+                                <span>
+                                    <span>总共 {{pager.tc}} 条记录，</span>
+                                    <span class="btn-group dropdown dropup">每页显示条数</span>
+                                    <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown">
+                                        <span id="showPageSize" class="page-size">{{pager.ps}}</span>
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li role="menuitem" :class="{active:pager.ps==20}" @click="getPage(1,20)"><a>20</a></li>
+                                        <li role="menuitem" :class="{active:pager.ps==25}" @click="getPage(1,25)"><a>25</a></li>
+                                        <li role="menuitem" :class="{active:pager.ps==50}" @click="getPage(1,50)"><a>50</a></li>
+                                        <li role="menuitem" :class="{active:pager.ps==100}" @click="getPage(1,100)"><a>100</a></li>
+                                    </ul>
+                                </span>
+                        </div>
+                        <div class="pagination pagination-success">
+                            <div class="btn-group" role="group">
+                                <a href="javascript:void(0);" class="btn btn-primary previous"
+                                   :class="{disabled:pager.pn===1}"
+                                   @click="getPage(pager.pn-1,pager.ps)">
+                                    <i class="fui-arrow-left"></i>
+                                    Prev
+                                </a>
+                                <a href="javascript:void(0);" class="btn btn-primary next" :class="{disabled:pager.pn>=pager.tp}"
+                                   @click="getPage(pager.pn+1,pager.ps)">
+                                    Next
+                                    <i class="fui-arrow-right"></i>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </nav>
             </div>
         </div>
-        <div class="col-xs-1 col-md-3 col-md-2">
         </div>
     </div>
 </div>
@@ -180,17 +175,20 @@
                 websiteName:null,
                 normal:''
             },
+            loading:false,
         },
         created:function () {
             this.getPage(1);
         },
         methods:{
             getPage:function (pageNo,pageSize,params) {
+                this.loading = true
                 let $this = this;
                 let p = $.extend({
                     pageNo: pageNo ? pageNo : this.pager.pn,
                     pageSize: pageSize ? pageSize : this.pager.ps
                 }, params);
+                this.pager.data = [];
                 $http.get(contextPath + '/url/config/page', p)
                     .then(function (res) {
                         $this.pager["pn"] = res.pageNo;
@@ -198,7 +196,9 @@
                         $this.pager["tc"] = res.totalCount;
                         $this.pager["tp"] = Math.ceil(res.totalCount / res.pageSize);
                         $this.pager["data"] = res.list;
+                        $this.loading = false
                     }).catch(function (reason) {
+                    $this.loading = false
                 })
             },
             search:function(){

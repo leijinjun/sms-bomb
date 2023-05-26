@@ -193,8 +193,7 @@
                 $http.get(contextPath + '/smsBomb/getResult', {'requestId': requestId,'sendSize':sendSize})
                     .then(function (res) {
                         let code = res[0];
-                        let successNum = res[1];
-                        $this.successSend[requestId] = successNum + $this.successSend[requestId];
+                        $this.successSend[requestId] = res[1];
                         let total = 0;
                         for (var key in $this.successSend) {
                             total += $this.successSend[key];

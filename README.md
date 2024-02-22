@@ -35,5 +35,3 @@
     ```
 5. 安装ocr服务
     参考https://github.com/sml2h3/ddddocr
-## 网站短信API资源
-若需要短信API资源进行测试，可以通过邮箱986111634&qq.com联系我，&替换换为@

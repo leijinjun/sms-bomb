@@ -1,6 +1,3 @@
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
 -- ----------------------------
 -- Table structure for s_sms_send_log
 -- ----------------------------
@@ -50,8 +47,6 @@ CREATE TABLE `s_sms_url`  (
   `last_used_time` datetime(0) NULL DEFAULT NULL COMMENT '最后使用时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-SET FOREIGN_KEY_CHECKS = 1;
 
 ALTER TABLE `sms_bomb`.`s_sms_url`
 ADD COLUMN `max_retry_times` int(0) NULL COMMENT '发送失败时，最大尝试次数' AFTER `last_used_time`;

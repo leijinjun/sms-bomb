@@ -6,24 +6,27 @@
 该程序会内置少量的资源以供使用。但不负责提供网站发送验证码资源。网站短信发送接口资源可以通过后台页面
 添加。一般地，新添加网站短信资源需要编写扩展脚本，需要具有Groovy知识。
 ## 快速开始
-1. 配置文件
-在/opt/smsBomb下，新建application-prod.properties文件。格式如该工程中application-dev.properties文件中所示内容。
+1. 配置JDK
 2. 下载源码安装
      ```
      git clone https://github.com/leijinjun/sms-bomb.git
      cd sms-bomb
      mvn clean install -Dmaven.test.skip=true
      mv target/sms-bomb.jar ./
-     java -jar -Dspring.profiles.active=prod sms-bomb.jar \
-     --spring.config.location=optional:file:/opt/smsBomb/application-prod.properties
+     Linux、MacOS平台下执行
+     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 sms-bomb.jar
+     Windows平台下执行
+     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" sms-bomb.jar
      ```
 3. 下载安装包安装
 
     [Release](https://github.com/leijinjun/sms-bomb/releases) 页面下载最新jar包。
     执行命令
     ```
-    java -jar -Dspring.profiles.active=prod sms-bomb.jar \
-    --spring.config.location=optional:file:/opt/smsBomb/application-prod.properties
+    Linux、MacOS平台下执行
+     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 sms-bomb.jar
+    Windows平台下执行
+     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" sms-bomb.jar
     ```
 4. docker安装
     ```

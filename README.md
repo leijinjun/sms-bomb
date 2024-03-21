@@ -15,9 +15,9 @@
      mvn clean install -Dmaven.test.skip=true
      mv target/sms-bomb.jar ./
      Linux、MacOS平台下执行
-     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 sms-bomb.jar
+     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 -Docr.dddd.url=ddddocr服务图片识别地址 -Docr.dddd.base64.url=ddddocr服务base64图片识别地址 sms-bomb.jar
      Windows平台下执行
-     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" sms-bomb.jar
+     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" "-Docr.dddd.url=ddddocr服务图片识别地址" "-Docr.dddd.base64.url=ddddocr服务base64图片识别地址" sms-bomb.jar
      ```
 3. 下载安装包安装
 
@@ -25,9 +25,9 @@
     执行命令
     ```
     Linux、MacOS平台下执行
-     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 sms-bomb.jar
+     java -jar -Dspring.profiles.active=dev -DDB_FILE_PATH=sqlite3DB文件路径 -Docr.dddd.url=ddddocr服务图片识别地址 -Docr.dddd.base64.url=ddddocr服务base64图片识别地址 sms-bomb.jar
     Windows平台下执行
-     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" sms-bomb.jar
+     java -jar "-Dspring.profiles.active=dev" "-DDB_FILE_PATH=sqlite3DB文件路径" "-Docr.dddd.url=ddddocr服务图片识别地址" "-Docr.dddd.base64.url=ddddocr服务base64图片识别地址" sms-bomb.jar
     ```
    其中sqlite3DB文件在[sqllite3DB样例文件](https://github.com/leijinjun/sms-bomb/blob/develop/src/main/resources/db/sms_bomb.db) ，该文件为样例文件，仅用于测试。
 4. docker安装
@@ -37,7 +37,12 @@
     cd sms-bomb
     chmod +x deploy.sh
     sh deploy.sh
-    docker run --name sms-bomb -p 8080:8080 -v /opt/smsBomb:/opt/smsBomb -d sms-bomb:[deploy.sh脚本中指定的version]
+    docker run --name sms-bomb \
+    -p 8080:8080 \ 
+    -v /opt/smsBomb:/opt/smsBomb \
+    -e DDDD_OCR_URL="ddddocr服务图片识别地址" \ 
+    -e DDDD_OCR_BASE64_URL="ddddocr服务BASE64图片识别地址" \
+    -d sms-bomb:[deploy.sh脚本中指定的version]
     ```
 5. 安装ocr服务
-    参考https://github.com/sml2h3/ddddocr
+    参考https://github.com/sml2h3/ddddocr，使用此服务将极大提高发送成功概率。

@@ -3,6 +3,10 @@ services:
     image: sms-bomb:latest
     ports:
       - "8080:8080"
+    environment:
+      DDDD_OCR_URL: 'http://192.168.100.1:9898/ocr/file'
+      DDDD_OCR_BASE64_URL: 'http://192.168.100.1:9898/ocr/b64/text'
+      SQLITE3DB: 'sms_bomb.db'
     volumes:
       - D:\opt\smsBomb:/opt/smsBomb
     depends_on:

@@ -42,6 +42,7 @@
     -v /opt/smsBomb:/opt/smsBomb \
     -e DDDD_OCR_URL="ddddocr服务图片识别地址" \ 
     -e DDDD_OCR_BASE64_URL="ddddocr服务BASE64图片识别地址" \
+    -e SQLITE3DB="sqlite3DB文件名" \
     -d sms-bomb:[deploy.sh脚本中指定的version]
     ```
 5. 安装ocr服务

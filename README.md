@@ -31,7 +31,7 @@
     ```
    其中sqlite3DB文件在[sqllite3DB样例文件](https://github.com/leijinjun/sms-bomb/blob/develop/src/main/resources/db/sms_bomb.db) ，该文件为样例文件，仅用于测试。
 4. docker安装
-    在路径/opt/smsBomb下添加sms_bomb.db文件。
+    在路径/opt/smsBomb下添加db文件。
     ```
     git clone https://github.com/leijinjun/sms-bomb.git
     cd sms-bomb

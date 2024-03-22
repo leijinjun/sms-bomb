@@ -45,4 +45,5 @@
     -d sms-bomb:[deploy.sh脚本中指定的version]
     ```
 5. 安装ocr服务
-    参考https://github.com/sml2h3/ddddocr，使用此服务将极大提高发送成功概率。
+
+   [ddddocr](https://github.com/sml2h3/ddddocr)，使用此服务将极大提高发送成功概率。
